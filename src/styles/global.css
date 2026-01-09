@@ -10,12 +10,45 @@ body {
 }
 
 h1 {
-    margin: 2rem 0 2rem;
+    margin: 3rem 0 3rem;
+    text-decoration: underline;
 }
 
 #code {
-    font-size: 20px;
+    font-size: 3rem;
     font-weight: bold;
-    font-style: italic;
-    margin: 2rem 0 2rem;
+    margin: 3rem 0 3rem;
+    min-height: 1.2em;
+    text-align: center;
+}
+
+#qrcode {
+    width: 512px;
+    height: 512px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+#loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #000;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }

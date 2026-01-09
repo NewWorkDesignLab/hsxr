@@ -3,7 +3,7 @@ declare const QRCode: any;
 const QR_DATA_URL = 'https://00224466.xyz/mues/qrdata.txt';
 
 const qrElem = document.getElementById("qrcode");
-const roomCodeElem = document.getElementById("roomcode");
+const roomCodeElem = document.getElementById("code");
 let lastToken: string | null = null;
 
 async function updateQr() {

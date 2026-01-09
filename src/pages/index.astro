@@ -5,16 +5,16 @@ import "../styles/global.css";
 <html lang="en">
 <head>
     <meta charset="utf-8"/>
-    <link rel="icon" type="image/png" href="/favicon.svg"/>
+    <link rel="icon" type="image/png" href="/hsxr/favicon.png"/>
     <meta name="viewport" content="width=device-width"/>
     <meta name="description" content="A QR Code for joining a HoloSpace-XR Lobby."/>
     <meta name="generator" content={Astro.generator}/>
     <title>HSXR Join Code</title>
 </head>
 <body>
-<h1>Join Code</h1>
+<h1>HoloSpace-XR Join Code</h1>
 <div id="qrcode"></div>
-<p id="roomcode"></p>
+<p id="code"></p>
 <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="../scripts/createqr.ts"></script>
 </body>

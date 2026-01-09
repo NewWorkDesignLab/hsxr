@@ -1,7 +1,7 @@
 declare const QRCode: any;
 
-const GIST_ID = '4591e435339250a41cf1a0ff88235516';
-const GIST_FILENAME = 'qrcode.txt';
+const JSONBIN_BIN_ID = '696126c943b1c97be9249c4a';
+const ACCESS_KEY = '$2a$10$dR8nsxSUDtw3qkMcOhkv1.dET7DYI6q0tAbtEamzAPIQ0Mbu60kOW';
 
 const qrElem = document.getElementById("qrcode");
 const roomCodeElem = document.getElementById("roomcode");
@@ -10,11 +10,16 @@ let lastToken: string | null = null;
 async function updateQr() {
     try {
         const resp = await fetch(
-            `https://gist.githubusercontent.com/raw/${GIST_ID}/${GIST_FILENAME}?nocache=${Date.now()}`
+            `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}/latest`,
+            { headers: {
+                "X-Bin-Meta": "false",
+                "X-Access-Key": ACCESS_KEY
+            }}
         );
 
         if (!resp.ok) return;
-        const token = (await resp.text()).trim();
+        const data = await resp.json();
+        const token = data.qrcode?.trim();
 
         if (!token || token === lastToken) return;
 

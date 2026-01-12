@@ -1,21 +1,13 @@
 ---
-import "../styles/global.css";
+import Layout from "../layouts/Layout.astro";
 ---
-
-<html lang="en">
-<head>
-    <meta charset="utf-8"/>
-    <link rel="icon" type="image/png" href="/hsxr/favicon.png"/>
-    <meta name="viewport" content="width=device-width"/>
-    <meta name="description" content="A QR Code for joining a HoloSpace-XR Lobby."/>
-    <meta name="generator" content={Astro.generator}/>
-    <title>HSXR Join Code</title>
-</head>
-<body>
-<h1>HoloSpace-XR Join Code</h1>
-<div id="qrcode"></div>
-<p id="code"></p>
-<script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="../scripts/createqr.ts"></script>
-</body>
-</html>
+<Layout>
+    <body>
+    <h1>HoloSpace-XR Join Code</h1>
+    <div id="qrcode"></div>
+    <p id="code"></p>
+    <a href="/hsxr/upload" class="upload-link">Upload 3D Model</a>
+    <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="../scripts/createqr.ts"></script>
+    </body>
+</Layout>

@@ -19,3 +19,249 @@ h1 {
     font-style: italic;
     margin: 2rem 0 2rem;
 }
+
+.upload-link {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background: #4a90d9;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: background 0.2s;
+    margin-top: 1rem;
+}
+
+.upload-link:hover {
+    background: #357abd;
+}
+
+/* Upload Page Styles */
+.upload-container {
+    width: 100%;
+    max-width: 500px;
+    padding: 0 1rem;
+    box-sizing: border-box;
+}
+
+.dropzone {
+    border: 3px dashed #ccc;
+    border-radius: 12px;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.3s ease;
+    background: #fafafa;
+    cursor: pointer;
+}
+
+.dropzone:hover,
+.dropzone.dragover {
+    border-color: #4a90d9;
+    background: #f0f7ff;
+}
+
+.dropzone.has-file {
+    border-color: #4caf50;
+    background: #f0fff0;
+}
+
+.dropzone-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.upload-icon {
+    color: #888;
+    margin-bottom: 0.5rem;
+}
+
+.dropzone.dragover .upload-icon {
+    color: #4a90d9;
+}
+
+.or-text {
+    color: #888;
+    font-size: 0.9rem;
+    margin: 0.5rem 0;
+}
+
+.file-select-btn {
+    background: #4a90d9;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+    font-weight: 500;
+}
+
+.file-select-btn:hover {
+    background: #357abd;
+}
+
+.file-limit {
+    color: #888;
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+}
+
+.file-info {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: #e8f5e9;
+    border-radius: 8px;
+    border: 1px solid #c8e6c9;
+}
+
+.file-details {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.file-name {
+    font-weight: 500;
+    flex: 1;
+    word-break: break-all;
+}
+
+.file-size {
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.remove-btn {
+    background: #ff5252;
+    color: white;
+    border: none;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s;
+}
+
+.remove-btn:hover {
+    background: #d32f2f;
+}
+
+.code-section {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.code-section label {
+    font-weight: 500;
+    color: #333;
+}
+
+.code-section input {
+    padding: 0.75rem 1rem;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+}
+
+.code-section input:focus {
+    outline: none;
+    border-color: #4a90d9;
+}
+
+.upload-btn {
+    width: 100%;
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: #4caf50;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.upload-btn:hover:not(:disabled) {
+    background: #43a047;
+}
+
+.upload-btn:disabled {
+    background: #bbb;
+    cursor: not-allowed;
+}
+
+.spinner {
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.status-message {
+    margin-top: 1rem;
+    padding: 1rem;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 500;
+}
+
+.status-message.success {
+    background: #e8f5e9;
+    color: #2e7d32;
+    border: 1px solid #c8e6c9;
+}
+
+.status-message.error {
+    background: #ffebee;
+    color: #c62828;
+    border: 1px solid #ffcdd2;
+}
+
+.progress-container {
+    margin-top: 1rem;
+    background: #e0e0e0;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+    height: 24px;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #4caf50, #8bc34a);
+    width: 0%;
+    transition: width 0.3s ease;
+}
+
+.progress-text {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #333;
+}
+
+.hidden {
+    display: none !important;
+}

@@ -1,0 +1,49 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+const MAX_FILE_SIZE_MB = 50;
+const UPLOAD_ENDPOINT = "https://00224466.xyz/hsxr_models/upload.php";
+---
+
+<Layout>
+    <h1>HoloSpace-XR Upload</h1>
+    <div class="upload-container">
+        <div id="dropzone" class="dropzone">
+            <div class="dropzone-content">
+                <svg class="upload-icon" xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+                <p>Drag a <strong>.glb</strong> file here</p>
+                <p class="or-text">or</p>
+                <label for="fileInput" class="file-select-btn">Select file</label>
+                <input type="file" id="fileInput" accept=".glb" hidden />
+                <p class="file-limit">Max. {MAX_FILE_SIZE_MB} MB</p>
+            </div>
+        </div>
+        <div id="fileInfo" class="file-info hidden">
+            <div class="file-details">
+                <span id="fileName" class="file-name"></span>
+                <span id="fileSize" class="file-size"></span>
+                <button id="removeFile" class="remove-btn" title="Remove file">✕</button>
+            </div>
+        </div>
+        <div class="code-section">
+            <label for="uploadCode">Enter upload code:</label>
+            <input type="password" id="uploadCode" placeholder="Enter secret code" autocomplete="off" />
+        </div>
+        <button id="uploadBtn" class="upload-btn" disabled>
+            <span id="uploadBtnText">Upload</span>
+            <div id="uploadSpinner" class="spinner hidden"></div>
+        </button>
+        <div id="statusMessage" class="status-message hidden"></div>
+        <div id="progressContainer" class="progress-container hidden">
+            <div id="progressBar" class="progress-bar"></div>
+            <span id="progressText" class="progress-text">0%</span>
+        </div>
+    </div>
+
+    <div id="uploadConfig" data-max-size={MAX_FILE_SIZE_MB} data-endpoint={UPLOAD_ENDPOINT} hidden></div>
+    <script src="../scripts/uploadFile.ts"></script>
+</Layout>

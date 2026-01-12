@@ -3,10 +3,12 @@ import Layout from "../layouts/Layout.astro";
 ---
 <Layout>
     <body>
-    <h1>HoloSpace-XR Join Code</h1>
-    <div id="qrcode"></div>
-    <p id="code"></p>
-    <a href="/hsxr/upload" class="upload-link">Upload 3D Model</a>
+    <div class="main-content">
+        <h1>HoloSpace-XR Join Code</h1>
+        <div id="qrcode"></div>
+        <p id="code"></p>
+        <a href="/hsxr/upload" class="upload-link">Upload 3D Model</a>
+    </div>
     <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="../scripts/createqr.ts"></script>
     </body>

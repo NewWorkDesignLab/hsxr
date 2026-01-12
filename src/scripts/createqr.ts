@@ -8,6 +8,11 @@ let lastToken: string | null = null;
 let lastModified: string | null = null;
 let controller: AbortController | null = null;
 
+// Loading-Spinner beim Start anzeigen
+if (qrElem) {
+    qrElem.innerHTML = '<div class="qr-loading"></div>';
+}
+
 async function updateQr() {
     if (controller) {
         controller.abort();
@@ -42,7 +47,7 @@ async function updateQr() {
 
                 if (qrElem) {
                     qrElem.innerHTML = "";
-                    new QRCode(qrElem, { text: token, width: 512, height: 512 });
+                    new QRCode(qrElem, { text: token, width: 550, height: 550 });
                 }
 
                 if (roomCodeElem) {

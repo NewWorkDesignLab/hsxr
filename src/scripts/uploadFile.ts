@@ -123,6 +123,7 @@ async function handleUpload(): Promise<void> {
     formData.append('file', selectedFile);
     formData.append('code', uploadCode.value.trim());
 
+
     try {
         const xhr = new XMLHttpRequest();
 
@@ -135,6 +136,7 @@ async function handleUpload(): Promise<void> {
         });
 
         xhr.addEventListener('load', () => {
+
             if (xhr.status === 200) {
                 try {
                     const response = JSON.parse(xhr.responseText);
@@ -150,10 +152,13 @@ async function handleUpload(): Promise<void> {
                     clearFile();
                     uploadCode.value = '';
                 }
-            } else if (xhr.status === 401 || xhr.status === 403) {
-                showStatus('Invalid upload code!', 'error');
             } else {
-                showStatus('Server error: ' + xhr.status, 'error');
+                try {
+                    const response = JSON.parse(xhr.responseText);
+                    showStatus(response.message || 'Error: ' + xhr.status, 'error');
+                } catch {
+                    showStatus('Server error: ' + xhr.status, 'error');
+                }
             }
             resetUploadUI();
         });

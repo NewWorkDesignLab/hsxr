@@ -11,7 +11,7 @@ body {
     justify-content: center;
     align-items: center;
     color: black;
-    padding: 1rem;
+    padding: 0.5rem;
     box-sizing: border-box;
 }
 
@@ -23,12 +23,12 @@ body {
     text-align: center;
     width: 100%;
     max-width: 600px;
-    padding: 0 1rem;
+    padding: 0 0.5rem;
     box-sizing: border-box;
 }
 
 h1 {
-    margin: 1.5rem 0 1.5rem;
+    margin: 2.5rem 0 2.5rem;
     font-size: clamp(1.5rem, 5vw, 2.5rem);
     text-align: center;
     word-wrap: break-word;
@@ -39,22 +39,22 @@ h1 {
     display: flex;
     justify-content: center;
     align-items: center;
-    width: clamp(200px, 50vw, 550px);
-    height: clamp(200px, 50vw, 550px);
-    min-width: clamp(200px, 50vw, 550px);
-    min-height: clamp(200px, 50vw, 550px);
+    width: clamp(280px, 90vw, 550px);
+    height: clamp(280px, 90vw, 550px);
+    min-width: clamp(280px, 90vw, 550px);
+    min-height: clamp(280px, 90vw, 550px);
 }
 
 #qrcode img, #qrcode canvas {
-    width: clamp(200px, 50vw, 550px) !important;
-    height: clamp(200px, 50vw, 550px) !important;
+    width: clamp(280px, 90vw, 550px) !important;
+    height: clamp(280px, 90vw, 550px) !important;
 }
 
 #code {
     font-size: clamp(18px, 4vw, 26px);
     font-weight: bold;
     font-style: italic;
-    margin: 1.5rem 0 1.5rem;
+    margin: 2rem 0 2rem;
     word-break: break-all;
     max-width: 90vw;
     text-align: center;

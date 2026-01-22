@@ -12,6 +12,9 @@ import "../styles/global.css";
     <title>HoloSpace-XR</title>
 </head>
 <body>
-<slot/>
+    <div id="zoom-wrapper">
+        <slot />
+    </div>
+    <script src="../scripts/zoomCompensation.ts"></script>
 </body>
 </html>

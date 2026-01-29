@@ -6,12 +6,15 @@ import "../styles/global.css";
 <head>
     <meta charset="utf-8"/>
     <link rel="icon" type="image/png" href="/hsxr/favicon.png"/>
-    <meta name="viewport" content="width=device-width"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
     <meta name="description" content="A QR Code for joining a HoloSpace-XR Lobby."/>
     <meta name="generator" content={Astro.generator}/>
     <title>HoloSpace-XR</title>
 </head>
 <body>
-<slot/>
+    <div id="zoom-wrapper">
+        <slot />
+    </div>
+    <script src="../scripts/zoomCompensation.ts"></script>
 </body>
 </html>

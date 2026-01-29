@@ -1,18 +1,25 @@
 html, body {
     height: 100%;
     margin: 0;
+    padding: 0;
+    overflow: hidden;
 }
 
 body {
     font-family: sans-serif;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
     color: black;
-    padding: 1rem;
-    box-sizing: border-box;
+}
+
+#zoom-wrapper {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    transform-origin: 0 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .main-content {
@@ -23,12 +30,12 @@ body {
     text-align: center;
     width: 100%;
     max-width: 600px;
-    padding: 0 1rem;
+    padding: 0 0.5rem;
     box-sizing: border-box;
 }
 
 h1 {
-    margin: 1.5rem 0 1.5rem;
+    margin: 2.5rem 0 2.5rem;
     font-size: clamp(1.5rem, 5vw, 2.5rem);
     text-align: center;
     word-wrap: break-word;
@@ -39,22 +46,34 @@ h1 {
     display: flex;
     justify-content: center;
     align-items: center;
-    width: clamp(200px, 50vw, 550px);
-    height: clamp(200px, 50vw, 550px);
-    min-width: clamp(200px, 50vw, 550px);
-    min-height: clamp(200px, 50vw, 550px);
+<<<<<<< HEAD
+    width: clamp(200px, 85vw, 550px);
+    height: clamp(200px, 85vw, 550px);
+    min-width: clamp(200px, 85vw, 550px);
+    min-height: clamp(200px, 85vw, 550px);
 }
 
 #qrcode img, #qrcode canvas {
-    width: clamp(200px, 50vw, 550px) !important;
-    height: clamp(200px, 50vw, 550px) !important;
+    width: clamp(200px, 85vw, 550px) !important;
+    height: clamp(200px, 85vw, 550px) !important;
+=======
+    width: clamp(280px, 90vw, 550px);
+    height: clamp(280px, 90vw, 550px);
+    min-width: clamp(280px, 90vw, 550px);
+    min-height: clamp(280px, 90vw, 550px);
+}
+
+#qrcode img, #qrcode canvas {
+    width: clamp(280px, 90vw, 550px) !important;
+    height: clamp(280px, 90vw, 550px) !important;
+>>>>>>> a0a36d4820a515c81953d23efd75e6c38cda41eb
 }
 
 #code {
     font-size: clamp(18px, 4vw, 26px);
     font-weight: bold;
     font-style: italic;
-    margin: 1.5rem 0 1.5rem;
+    margin: 2rem 0 2rem;
     word-break: break-all;
     max-width: 90vw;
     text-align: center;
@@ -75,6 +94,14 @@ h1 {
     .qr-loading {
         width: 40px;
         height: 40px;
+    }
+
+    body {
+        padding: 0.5rem;
+    }
+
+    .main-content {
+        padding: 0 0.5rem;
     }
 }
 

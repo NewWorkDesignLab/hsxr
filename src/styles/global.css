@@ -46,17 +46,6 @@ h1 {
     display: flex;
     justify-content: center;
     align-items: center;
-<<<<<<< HEAD
-    width: clamp(200px, 85vw, 550px);
-    height: clamp(200px, 85vw, 550px);
-    min-width: clamp(200px, 85vw, 550px);
-    min-height: clamp(200px, 85vw, 550px);
-}
-
-#qrcode img, #qrcode canvas {
-    width: clamp(200px, 85vw, 550px) !important;
-    height: clamp(200px, 85vw, 550px) !important;
-=======
     width: clamp(280px, 90vw, 550px);
     height: clamp(280px, 90vw, 550px);
     min-width: clamp(280px, 90vw, 550px);
@@ -66,7 +55,6 @@ h1 {
 #qrcode img, #qrcode canvas {
     width: clamp(280px, 90vw, 550px) !important;
     height: clamp(280px, 90vw, 550px) !important;
->>>>>>> a0a36d4820a515c81953d23efd75e6c38cda41eb
 }
 
 #code {

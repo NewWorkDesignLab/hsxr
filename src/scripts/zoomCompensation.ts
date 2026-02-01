@@ -1,7 +1,22 @@
 (function () {
+
+  function isMobileDevice(): boolean {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+      || ('ontouchstart' in window)
+      || (navigator.maxTouchPoints > 0);
+  }
+
   function applyZoomFix() {
     const wrapper = document.getElementById('zoom-wrapper');
     if (!wrapper) return;
+
+    if (isMobileDevice()) {
+      wrapper.style.transform = '';
+      wrapper.style.width = '100vw';
+      wrapper.style.height = '100vh';
+      console.log('Zoom-Fix: Mobile device detected, skipping zoom compensation');
+      return;
+    }
 
     const dpr = window.devicePixelRatio || 1;
 

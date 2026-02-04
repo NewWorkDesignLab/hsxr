@@ -8,7 +8,6 @@ let lastToken: string | null = null;
 let lastModified: string | null = null;
 let controller: AbortController | null = null;
 
-// Loading-Spinner beim Start anzeigen
 if (qrElem) {
     qrElem.innerHTML = '<div class="qr-loading"></div>';
 }
@@ -51,7 +50,7 @@ async function updateQr() {
                 }
 
                 if (roomCodeElem) {
-                    const match = token.match(/hsxrJoin_(\w+)/);
+                    const match = token.match(/MUESJoin_(\w+)/);
                     roomCodeElem.textContent = match ? match[1] : token;
                 }
             }

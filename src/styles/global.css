@@ -224,7 +224,7 @@ h1 {
 }
 
 .code-section {
-    margin-top: 1.5rem;
+    margin-top: 1rem;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
@@ -241,6 +241,8 @@ h1 {
     border-radius: 8px;
     font-size: 1rem;
     transition: border-color 0.2s;
+    height: 52px;
+    box-sizing: border-box;
 }
 
 .code-section input:focus {
@@ -264,6 +266,7 @@ h1 {
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
+    height: 60px;
 }
 
 .upload-btn:hover:not(:disabled) {
@@ -337,3 +340,127 @@ h1 {
 .hidden {
     display: none !important;
 }
+
+.wide-content {
+    max-width: 1100px;
+}
+
+.dual-container {
+    display: flex;
+    gap: 2rem;
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: stretch;
+}
+
+.panel {
+    flex: 1;
+    min-width: 320px;
+    max-width: 500px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    padding: 1.5rem;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
+.panel h2 {
+    margin: 0 0 1.5rem;
+    font-size: 1.3rem;
+    color: #333;
+    text-align: center;
+}
+
+.upload-container,
+.download-container {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.download-container {
+    gap: 1.5rem;
+}
+
+.download-icon-wrapper {
+    display: flex;
+    justify-content: center;
+    padding: 2rem 0;
+    flex: 1;
+    align-items: center;
+}
+
+.download-icon {
+    color: #4a90d9;
+    width: 128px;
+    height: 128px;
+}
+
+.input-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.input-section label {
+    font-weight: 500;
+    color: #333;
+}
+
+.input-section input {
+    padding: 0.75rem 1rem;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+    height: 52px;
+    box-sizing: border-box;
+}
+
+.input-section input:focus {
+    outline: none;
+    border-color: #4a90d9;
+}
+
+.download-btn {
+    width: 100%;
+    padding: 1rem;
+    background: #4a90d9;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    height: 60px;
+}
+
+.download-btn:hover:not(:disabled) {
+    background: #357abd;
+}
+
+.download-btn:disabled {
+    background: #bbb;
+    cursor: not-allowed;
+}
+
+@media (max-width: 1024px) {
+    .dual-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .panel {
+        width: 100%;
+        max-width: 500px;
+    }
+}
+

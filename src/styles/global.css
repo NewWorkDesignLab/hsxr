@@ -464,3 +464,24 @@ h1 {
     }
 }
 
+@media (max-width: 768px) {
+    html, body {
+        overflow-y: auto;
+        overflow-x: hidden;
+        height: auto;
+        min-height: 100%;
+    }
+
+    #zoom-wrapper {
+        position: relative;
+        height: auto;
+        min-height: 100vh;
+        overflow: visible;
+    }
+
+    .main-content {
+        min-height: auto;
+        padding-bottom: 2rem;
+    }
+}
+

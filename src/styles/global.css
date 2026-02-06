@@ -466,22 +466,33 @@ h1 {
 
 @media (max-width: 768px) {
     html, body {
-        overflow-y: auto;
+        overflow-y: auto !important;
         overflow-x: hidden;
         height: auto;
         min-height: 100%;
+        -webkit-overflow-scrolling: touch;
     }
 
     #zoom-wrapper {
-        position: relative;
-        height: auto;
-        min-height: 100vh;
-        overflow: visible;
+        position: static !important;
+        height: auto !important;
+        min-height: auto;
+        overflow: visible !important;
+        transform: none !important;
     }
 
     .main-content {
         min-height: auto;
-        padding-bottom: 2rem;
+        padding: 1rem 0.5rem 2rem;
+    }
+
+    .dual-container {
+        gap: 1.5rem;
+    }
+
+    .panel {
+        min-width: unset;
+        width: 100%;
     }
 }
 

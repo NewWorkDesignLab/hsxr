@@ -1,39 +1,36 @@
 (function () {
 
   function isMobileDevice(): boolean {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-      || ('ontouchstart' in window)
-      || (navigator.maxTouchPoints > 0);
+    const isMobileUA = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const isSmallScreen = window.screen.width <= 1024 || window.innerWidth <= 1024;
+    const hasTouchAndSmallScreen = (('ontouchstart' in window) || (navigator.maxTouchPoints > 0)) && isSmallScreen;
+    const isLikelyMobileHighDPR = window.devicePixelRatio > 1 && isSmallScreen &&
+      Math.abs(window.innerWidth - window.screen.width) < 100;
+    return isMobileUA || hasTouchAndSmallScreen || isLikelyMobileHighDPR;
   }
 
   function applyZoomFix() {
     const wrapper = document.getElementById('zoom-wrapper');
     if (!wrapper) return;
 
+    if (isMobileDevice()) {
+      wrapper.style.transform = 'none';
+      wrapper.style.width = '';
+      wrapper.style.height = '';
+      wrapper.style.transformOrigin = '';
+      return;
+    }
+
     wrapper.style.transform = '';
     wrapper.style.width = '100vw';
     wrapper.style.height = '100vh';
 
-    if (isMobileDevice()) {
-      console.log('Zoom-Fix: Mobile device detected, skipping zoom compensation');
-      return;
-    }
-
     const dpr = window.devicePixelRatio || 1;
-
-    if (dpr <= 1.01) {
-      console.log('Zoom-Fix: No OS zoom detected (DPR=1)');
-      return;
-    }
-
-    const screenWidth = window.screen.width;
-    const screenHeight = window.screen.height;
+    if (dpr <= 1.01) return;
 
     const viewportWidth = window.innerWidth;
     const viewportHeight = window.innerHeight;
-
     const scale = 1 / dpr;
-
     const scaledWidth = viewportWidth * dpr;
     const scaledHeight = viewportHeight * dpr;
 
@@ -45,12 +42,6 @@
     document.documentElement.style.setProperty('--zoom-scale', String(dpr));
     document.documentElement.style.setProperty('--effective-viewport-width', `${scaledWidth}px`);
     document.documentElement.style.setProperty('--effective-viewport-height', `${scaledHeight}px`);
-
-    console.log(
-      `Zoom-Fix: DPR=${dpr.toFixed(2)}, Scale=${scale.toFixed(4)}, ` +
-      `Screen=${screenWidth}x${screenHeight}, Viewport=${viewportWidth}x${viewportHeight}, ` +
-      `Wrapper=${scaledWidth}x${scaledHeight}`
-    );
   }
 
   applyZoomFix();

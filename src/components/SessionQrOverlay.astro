@@ -1,0 +1,52 @@
+---
+---
+
+<div id="session-qr-overlay" class="session-qr-overlay hidden" role="dialog" aria-modal="true" aria-label="Session QR code">
+    <div class="session-qr-modal">
+        <div id="session-qr-canvas" class="session-qr-canvas"></div>
+        <p id="session-qr-payload" class="session-qr-payload"></p>
+        <button type="button" class="session-qr-close" id="session-qr-close" aria-label="Close">&times;</button>
+    </div>
+</div>
+
+<script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+<script>
+    const overlay = document.getElementById("session-qr-overlay");
+    const canvas = document.getElementById("session-qr-canvas");
+    const payloadEl = document.getElementById("session-qr-payload");
+    const closeBtn = document.getElementById("session-qr-close");
+
+    function show(payload) {
+        payloadEl.textContent = payload;
+        canvas.innerHTML = "";
+        new QRCode(canvas, {
+            text: payload,
+            width: 500,
+            height: 500,
+            colorDark: "#000000",
+            colorLight: "#ffffff",
+            correctLevel: QRCode.CorrectLevel.H,
+        });
+        overlay.classList.remove("hidden");
+    }
+
+    function hide() {
+        overlay.classList.add("hidden");
+        canvas.innerHTML = "";
+    }
+
+    window.addEventListener("hsxr:show-qr", (ev) => {
+        const payload = ev.detail && ev.detail.payload;
+        if (payload) show(payload);
+    });
+
+    closeBtn.addEventListener("click", hide);
+    overlay.addEventListener("click", (ev) => {
+        if (ev.target === overlay) hide();
+    });
+    document.addEventListener("keydown", (ev) => {
+        if (ev.key === "Escape") hide();
+    });
+</script>
+

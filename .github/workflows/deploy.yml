@@ -19,23 +19,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
-
       - run: npm ci
-
       - name: Build
         env:
-          PUBLIC_HSXR_API_KEY: ${{ secrets.HSXR_API_KEY }}
-          PUBLIC_HSXR_API_BASE: ${{ secrets.HSXR_API_BASE }}
+          PUBLIC_HSXR_API_BASE: ${{ secrets.PUBLIC_HSXR_API_BASE }}
+          PUBLIC_HSXR_API_KEY: ${{ secrets.PUBLIC_HSXR_API_KEY }}
         run: npm run build
-
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: ./dist
 
   deploy:
     needs: build

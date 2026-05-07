@@ -1,6 +1,5 @@
 ---
-const API_BASE = import.meta.env.PUBLIC_HSXR_API_BASE;
-const API_KEY = import.meta.env.PUBLIC_HSXR_API_KEY;
+const API_BASE = "https://api-gateway-00224466.ludorfjonas.workers.dev/hsxr";
 ---
 
 <section class="sessions-card" aria-label="Available sessions">
@@ -34,7 +33,7 @@ const API_KEY = import.meta.env.PUBLIC_HSXR_API_KEY;
     </div>
 </section>
 
-<script define:vars={{ API_BASE, API_KEY }}>
+<script define:vars={{ API_BASE }}>
     const REFRESH_INTERVAL_MS = 1000;
     const listEl = document.getElementById("sessions-list");
     const countEl = document.getElementById("sessions-count");
@@ -132,7 +131,6 @@ const API_KEY = import.meta.env.PUBLIC_HSXR_API_KEY;
         inFlight = true;
         try {
             const res = await fetch(`${API_BASE}/lobbies`, {
-                headers: API_KEY ? { "X-API-Key": API_KEY } : {},
                 cache: "no-store",
             });
             if (!res.ok) {

@@ -44,7 +44,7 @@ const API_BASE = "https://api-gateway-00224466.ludorfjonas.workers.dev/hsxr";
     function formatDate(iso) {
         const d = new Date(iso);
         if (isNaN(d.getTime())) return iso;
-        return d.toLocaleString(undefined, {
+        return d.toLocaleString("de-DE", {
             year: "numeric",
             month: "2-digit",
             day: "2-digit",
@@ -94,8 +94,12 @@ const API_BASE = "https://api-gateway-00224466.ludorfjonas.workers.dev/hsxr";
 
         listEl.innerHTML = lobbies
             .map(
-                (l) => `
-                <article class="session-item" data-join-code="${escapeHtml(l.join_code)}">
+                (l) => {
+                    const playerCount = Number(l.player_count ?? 0);
+                    const maxPlayers = Number(l.max_players ?? 0);
+                    const isFull = maxPlayers > 0 && playerCount >= maxPlayers;
+                    return `
+                <article class="session-item${isFull ? " session-item-full" : ""}" data-join-code="${escapeHtml(l.join_code)}">
                     <div class="session-info">
                         <h3 class="session-title">${escapeHtml(l.join_code)}</h3>
                         <dl class="session-meta">
@@ -109,7 +113,12 @@ const API_BASE = "https://api-gateway-00224466.ludorfjonas.workers.dev/hsxr";
                             </div>
                         </dl>
                     </div>
-                    <button type="button" class="session-qr-btn" aria-label="Show QR code for ${escapeHtml(l.join_code)}">
+                    <div class="session-players${isFull ? " session-players-full" : ""}" aria-label="Players">
+                        <span class="session-players-current">${escapeHtml(String(playerCount))}</span>
+                        <span class="session-players-sep">/</span>
+                        <span class="session-players-max">${escapeHtml(String(maxPlayers))}</span>
+                    </div>
+                    <button type="button" class="session-qr-btn"${isFull ? " disabled aria-disabled=\"true\"" : ""} aria-label="${isFull ? `Lobby ${escapeHtml(l.join_code)} is full` : `Show QR code for ${escapeHtml(l.join_code)}`}">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                             <rect x="3" y="3" width="7" height="7"/>
                             <rect x="14" y="3" width="7" height="7"/>
@@ -121,7 +130,8 @@ const API_BASE = "https://api-gateway-00224466.ludorfjonas.workers.dev/hsxr";
                             <line x1="17" y1="17" x2="17" y2="17.01"/>
                         </svg>
                     </button>
-                </article>`,
+                </article>`;
+                },
             )
             .join("");
     }
@@ -153,7 +163,7 @@ const API_BASE = "https://api-gateway-00224466.ludorfjonas.workers.dev/hsxr";
 
     listEl.addEventListener("click", (ev) => {
         const btn = ev.target.closest(".session-qr-btn");
-        if (!btn) return;
+        if (!btn || btn.disabled) return;
         const item = btn.closest(".session-item");
         const code = item && item.dataset.joinCode;
         if (!code) return;

@@ -1,8 +1,8 @@
 import { defineConfig } from 'astro/config';
+import vercel from '@astrojs/vercel';
 
 export default defineConfig({
-  output: 'static',
-  site: 'https://newworkdesignlab.github.io',
-  base: '/hsxr',
+  output: 'server',
+  adapter: vercel({ imageService: false }),
+  site: 'https://hsxr.00224466.xyz',
 });
-

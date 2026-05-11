@@ -1,5 +1,4 @@
 ---
-const API_BASE = "https://api-gateway-00224466.ludorfjonas.workers.dev/hsxr";
 ---
 
 <section class="sessions-card" aria-label="Available sessions">
@@ -33,8 +32,10 @@ const API_BASE = "https://api-gateway-00224466.ludorfjonas.workers.dev/hsxr";
     </div>
 </section>
 
-<script define:vars={{ API_BASE }}>
-    const REFRESH_INTERVAL_MS = 1000;
+<script>
+    import { fetchLobbies } from "../lib/hsxr-client";
+
+    const REFRESH_INTERVAL_MS = 3000;
     const listEl = document.getElementById("sessions-list");
     const countEl = document.getElementById("sessions-count");
 
@@ -140,17 +141,8 @@ const API_BASE = "https://api-gateway-00224466.ludorfjonas.workers.dev/hsxr";
         if (inFlight) return;
         inFlight = true;
         try {
-            const res = await fetch(`${API_BASE}/lobbies`, {
-                cache: "no-store",
-            });
-            if (!res.ok) {
-                if (currentSnapshot === "") {
-                    listEl.innerHTML = `<p class="sessions-empty sessions-error">Could not load sessions (HTTP ${res.status}).</p>`;
-                }
-                return;
-            }
-            const data = await res.json();
-            render(Array.isArray(data) ? data : []);
+            const lobbies = await fetchLobbies();
+            render(lobbies);
         } catch (err) {
             if (currentSnapshot === "") {
                 listEl.innerHTML = `<p class="sessions-empty sessions-error">Could not load sessions.</p>`;
@@ -173,6 +165,11 @@ const API_BASE = "https://api-gateway-00224466.ludorfjonas.workers.dev/hsxr";
     });
 
     fetchSessions();
-    window.setInterval(fetchSessions, REFRESH_INTERVAL_MS);
+    let pollTimer = window.setInterval(() => {
+        if (document.visibilityState === "visible") fetchSessions();
+    }, REFRESH_INTERVAL_MS);
+    document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") fetchSessions();
+    });
 </script>
 

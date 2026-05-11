@@ -4,6 +4,61 @@ html, body {
 }
 
 body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.site-footer {
+    margin-top: auto;
+    padding: 1rem 0;
+    background: #ffffff;
+    border-top: 1px solid #e5e7eb;
+}
+
+.footer-inner {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    box-sizing: border-box;
+}
+
+.footer-logos {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.footer-logo {
+    height: 38px;
+    width: auto;
+    object-fit: contain;
+}
+
+.footer-divider {
+    color: #9ca3af;
+    font-size: 1.1rem;
+    margin-left: auto;
+}
+
+.footer-details-link {
+    color: #4a90d9;
+    text-decoration: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+
+.footer-details-link:hover {
+    color: #357abd;
+    text-decoration: underline;
+}
+
+body {
     font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
     color: #1f2937;
     background: #f7f8fa;

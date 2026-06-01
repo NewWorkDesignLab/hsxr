@@ -17,4 +17,3 @@ export const POST: APIRoute = async ({ request }) => {
     if (setCookie) headers.set("set-cookie", setCookie);
     return new Response(resBody, { status: upstream.status, headers });
 };
-

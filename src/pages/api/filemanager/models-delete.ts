@@ -17,4 +17,3 @@ export const DELETE: APIRoute = async ({ request }) => {
     });
     return new Response(null, { status: upstream.status });
 };
-

@@ -173,7 +173,21 @@ async function downloadModel(name: string, row: HTMLElement): Promise<void> {
     msgEl.className = "fm-upload-msg fm-dl-msg";
     progressEl.style.display = "block";
 
-    const r = await fetch(`/api/filemanager/models-download?name=${encodeURIComponent(name)}`);
+    let fetchUrl = `/api/filemanager/models-download?name=${encodeURIComponent(name)}`;
+    let usingProxy = true;
+    try {
+        const su = await fetch(`/api/filemanager/models-download-url?name=${encodeURIComponent(name)}`);
+        if (su.ok) {
+            const { url } = await su.json() as { url?: string };
+            if (url) { fetchUrl = url; usingProxy = false; }
+        }
+    } catch {}
+
+    if (usingProxy) {
+        msgEl.textContent = "⚠ Direkter Download nicht verfügbar – Proxy-Fallback";
+    }
+
+    const r = await fetch(fetchUrl);
     if (!r.ok) {
         msgEl.textContent = "Download fehlgeschlagen";
         msgEl.className = "fm-upload-msg fm-dl-msg fm-upload-msg-error";
@@ -234,17 +248,30 @@ function setProgress(pct: number, msg = "", error = false): void {
 async function uploadFile(file: File): Promise<void> {
     (document.getElementById("upload-filename") as HTMLElement).textContent = "Uploading…";
     setProgress(0);
+
+    let directUrl: string | null = null;
+    let directMethod = "PUT";
+    try {
+        const su = await fetch("/api/filemanager/models-upload-url", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name: file.name }),
+        });
+        if (su.ok) {
+            const data = await su.json() as { url?: string; method?: string };
+            if (data.url) { directUrl = data.url; directMethod = data.method ?? "PUT"; }
+        }
+    } catch {}
+
     return new Promise<void>((resolve) => {
         const xhr = new XMLHttpRequest();
-        const fd = new FormData();
-        fd.append("file", file);
         xhr.upload.addEventListener("progress", (e: ProgressEvent) => {
             if (e.lengthComputable) {
                 setProgress(Math.round(e.loaded / e.total * 95));
             }
         });
         xhr.addEventListener("load", () => {
-            if (xhr.status === 201 || xhr.status === 200) {
+            if (xhr.status === 201 || xhr.status === 200 || xhr.status === 204) {
                 setProgress(100, "✓ Erfolgreich hochgeladen");
                 loadModels();
                 const upEl = document.getElementById("upload-status") as HTMLElement;
@@ -267,8 +294,17 @@ async function uploadFile(file: File): Promise<void> {
             setTimeout(() => hideProgress(upEl4), 4000);
             resolve();
         });
-        xhr.open("POST", "/api/filemanager/models-upload");
-        xhr.send(fd);
+
+        if (directUrl) {
+            xhr.open(directMethod, directUrl);
+            xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
+            xhr.send(file);
+        } else {
+            const fd = new FormData();
+            fd.append("file", file);
+            xhr.open("POST", "/api/filemanager/models-upload");
+            xhr.send(fd);
+        }
     });
 }
 

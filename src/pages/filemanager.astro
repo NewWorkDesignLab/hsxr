@@ -173,19 +173,7 @@ async function downloadModel(name: string, row: HTMLElement): Promise<void> {
     msgEl.className = "fm-upload-msg fm-dl-msg";
     progressEl.style.display = "block";
 
-    let fetchUrl = `/api/filemanager/models-download?name=${encodeURIComponent(name)}`;
-    let usingProxy = true;
-    try {
-        const su = await fetch(`/api/filemanager/models-download-url?name=${encodeURIComponent(name)}`);
-        if (su.ok) {
-            const { url } = await su.json() as { url?: string };
-            if (url) { fetchUrl = url; usingProxy = false; }
-        }
-    } catch {}
-
-    if (usingProxy) {
-        msgEl.textContent = "⚠ Direkter Download nicht verfügbar – Proxy-Fallback";
-    }
+    const fetchUrl = `/api/filemanager/models-download?name=${encodeURIComponent(name)}`;
 
     const r = await fetch(fetchUrl);
     if (!r.ok) {

@@ -237,20 +237,6 @@ async function uploadFile(file: File): Promise<void> {
     (document.getElementById("upload-filename") as HTMLElement).textContent = "Uploading…";
     setProgress(0);
 
-    let directUrl: string | null = null;
-    let directMethod = "PUT";
-    try {
-        const su = await fetch("/api/filemanager/models-upload-url", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name: file.name }),
-        });
-        if (su.ok) {
-            const data = await su.json() as { url?: string; method?: string };
-            if (data.url) { directUrl = data.url; directMethod = data.method ?? "PUT"; }
-        }
-    } catch {}
-
     return new Promise<void>((resolve) => {
         const xhr = new XMLHttpRequest();
         xhr.upload.addEventListener("progress", (e: ProgressEvent) => {
@@ -283,16 +269,10 @@ async function uploadFile(file: File): Promise<void> {
             resolve();
         });
 
-        if (directUrl) {
-            xhr.open(directMethod, directUrl);
-            xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
-            xhr.send(file);
-        } else {
-            const fd = new FormData();
-            fd.append("file", file);
-            xhr.open("POST", "/api/filemanager/models-upload");
-            xhr.send(fd);
-        }
+        const fd = new FormData();
+        fd.append("file", file);
+        xhr.open("POST", "/api/filemanager/models-upload");
+        xhr.send(fd);
     });
 }
 

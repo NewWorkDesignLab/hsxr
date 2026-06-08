@@ -167,10 +167,10 @@ async function downloadModel(name: string, row: HTMLElement): Promise<void> {
     const msgEl = row.querySelector<HTMLElement>(".fm-dl-msg")!;
 
     nameEl.textContent = "Downloading…";
-    fillEl.style.width = "0%";
-    fillEl.classList.remove("fm-progress-bar-indeterminate");
-    pctEl.textContent = "0%";
-    msgEl.textContent = "";
+    fillEl.style.width = "";
+    fillEl.classList.add("fm-progress-bar-indeterminate");
+    pctEl.textContent = "…";
+    msgEl.textContent = "Warte auf Server…";
     msgEl.className = "fm-upload-msg fm-dl-msg";
     progressEl.style.display = "block";
 
@@ -178,6 +178,9 @@ async function downloadModel(name: string, row: HTMLElement): Promise<void> {
 
     const r = await fetch(fetchUrl);
     if (!r.ok) {
+        fillEl.classList.remove("fm-progress-bar-indeterminate");
+        fillEl.style.width = "0%";
+        pctEl.textContent = "0%";
         msgEl.textContent = "Download fehlgeschlagen";
         msgEl.className = "fm-upload-msg fm-dl-msg fm-upload-msg-error";
         setTimeout(() => hideProgress(progressEl), 4000);
@@ -190,20 +193,20 @@ async function downloadModel(name: string, row: HTMLElement): Promise<void> {
     const chunks: Uint8Array<ArrayBuffer>[] = [];
     const reader = r.body!.getReader();
 
-    if (total === 0) {
-        fillEl.classList.add("fm-progress-bar-indeterminate");
-        pctEl.textContent = "…";
-    }
+    msgEl.textContent = total > 0
+        ? `0 / ${formatSize(total)}`
+        : "Empfange Daten…";
 
     while (true) {
         const { done, value } = await reader.read();
         if (done) break;
         chunks.push(new Uint8Array(value) as Uint8Array<ArrayBuffer>);
         loaded += value.byteLength;
+        // Bar bleibt indeterminate – nur Text aktualisieren
         if (total > 0) {
             const pct = Math.round(loaded / total * 100);
-            fillEl.style.width = pct + "%";
             pctEl.textContent = pct + "%";
+            msgEl.textContent = `${formatSize(loaded)} / ${formatSize(total)}`;
         } else {
             msgEl.textContent = formatSize(loaded) + " empfangen…";
         }
@@ -230,26 +233,39 @@ async function deleteModel(name: string): Promise<void> {
     else { alert("Löschen fehlgeschlagen"); }
 }
 
-function setProgress(pct: number, msg = "", error = false): void {
+function setProgress(pct: number, msg = "", error = false, indeterminate = false): void {
     const status = document.getElementById("upload-status") as HTMLElement;
     status.style.display = "block";
-    (document.getElementById("progress-fill") as HTMLElement).style.width = pct + "%";
-    (document.getElementById("upload-percent") as HTMLElement).textContent = pct + "%";
+    const fillEl = document.getElementById("progress-fill") as HTMLElement;
+    const pctEl = document.getElementById("upload-percent") as HTMLElement;
+    if (indeterminate) {
+        fillEl.classList.add("fm-progress-bar-indeterminate");
+        pctEl.textContent = "…";
+    } else {
+        fillEl.classList.remove("fm-progress-bar-indeterminate");
+        fillEl.style.width = pct + "%";
+        pctEl.textContent = pct + "%";
+    }
     const msgEl = document.getElementById("upload-message") as HTMLElement;
     msgEl.textContent = msg;
-    msgEl.className = "fm-upload-msg" + (error ? " fm-upload-msg-error" : pct === 100 ? " fm-upload-msg-ok" : "");
+    msgEl.className = "fm-upload-msg" + (error ? " fm-upload-msg-error" : pct === 100 && !indeterminate ? " fm-upload-msg-ok" : "");
 }
 
 async function uploadFile(file: File): Promise<void> {
-    (document.getElementById("upload-filename") as HTMLElement).textContent = "Uploading…";
-    setProgress(0);
+    (document.getElementById("upload-filename") as HTMLElement).textContent = file.name;
+    setProgress(0, "Übertrage…", false, true);
 
     return new Promise<void>((resolve) => {
         const xhr = new XMLHttpRequest();
+        const totalBytes = file.size;
+
         xhr.upload.addEventListener("progress", (e: ProgressEvent) => {
             if (e.lengthComputable) {
-                setProgress(Math.round(e.loaded / e.total * 95));
+                setProgress(0, `${formatSize(e.loaded)} / ${formatSize(totalBytes)}`, false, true);
             }
+        });
+        xhr.upload.addEventListener("load", () => {
+            setProgress(0, "Verarbeite auf dem Server…", false, true);
         });
         xhr.addEventListener("load", () => {
             if (xhr.status === 201 || xhr.status === 200 || xhr.status === 204) {

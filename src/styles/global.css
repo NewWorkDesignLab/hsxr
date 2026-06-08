@@ -1203,11 +1203,23 @@ h1 {
     height: 100%;
     background: #4a90d9;
     border-radius: 9999px;
-    transition: width .15s;
+    transition: width .15s ease;
 }
 
 .fm-progress-bar-dl {
     background: #0d9488;
+}
+
+@keyframes fm-indeterminate {
+    0%   { transform: translateX(-100%); }
+    100% { transform: translateX(400%); }
+}
+
+.fm-progress-bar-indeterminate {
+    width: 25% !important;
+    transition: none !important;
+    animation: fm-indeterminate 1.4s ease-in-out infinite;
+    transform-origin: left center;
 }
 
 .fm-upload-msg {

@@ -168,6 +168,7 @@ async function downloadModel(name: string, row: HTMLElement): Promise<void> {
 
     nameEl.textContent = "Downloading…";
     fillEl.style.width = "0%";
+    fillEl.classList.remove("fm-progress-bar-indeterminate");
     pctEl.textContent = "0%";
     msgEl.textContent = "";
     msgEl.className = "fm-upload-msg fm-dl-msg";
@@ -189,6 +190,11 @@ async function downloadModel(name: string, row: HTMLElement): Promise<void> {
     const chunks: Uint8Array<ArrayBuffer>[] = [];
     const reader = r.body!.getReader();
 
+    if (total === 0) {
+        fillEl.classList.add("fm-progress-bar-indeterminate");
+        pctEl.textContent = "…";
+    }
+
     while (true) {
         const { done, value } = await reader.read();
         if (done) break;
@@ -203,6 +209,7 @@ async function downloadModel(name: string, row: HTMLElement): Promise<void> {
         }
     }
 
+    fillEl.classList.remove("fm-progress-bar-indeterminate");
     fillEl.style.width = "100%";
     pctEl.textContent = "100%";
     msgEl.textContent = "✓ Abgeschlossen";

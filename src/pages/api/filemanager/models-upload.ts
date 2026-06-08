@@ -9,43 +9,62 @@ export const POST: APIRoute = async ({ request }) => {
 
     let fileBuffer: ArrayBuffer;
     let fileName = "upload.glb";
-    let contentType = "application/octet-stream";
+    let fileType = "application/octet-stream";
 
-    const reqContentType = request.headers.get("content-type") ?? "";
-    if (reqContentType.includes("multipart/form-data")) {
-        let formData: FormData;
-        try {
-            formData = await request.formData();
-        } catch {
-            return new Response(JSON.stringify({ error: "invalid form data" }), { status: 400 });
-        }
+    try {
+        const formData = await request.formData();
         const fileEntry = formData.get("file");
         if (!(fileEntry instanceof File)) {
             return new Response(JSON.stringify({ error: "file field required" }), { status: 400 });
         }
         fileBuffer = await fileEntry.arrayBuffer();
         fileName = fileEntry.name || fileName;
-        contentType = fileEntry.type || contentType;
-    } else {
-        fileBuffer = await request.arrayBuffer();
-        contentType = reqContentType || contentType;
+        fileType = fileEntry.type || fileType;
+    } catch {
+        return new Response(JSON.stringify({ error: "invalid form data" }), { status: 400 });
     }
 
-    const upstream = await fetch(`${getApiUrl()}/models`, {
-        method: "POST",
-        headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": contentType,
-            "Content-Disposition": `attachment; filename="${encodeURIComponent(fileName)}"`,
-        },
-        body: fileBuffer,
-    });
-    const resBody = await upstream.text();
-    return new Response(resBody, {
-        status: upstream.status,
-        headers: { "Content-Type": "application/json" },
-    });
+    try {
+        const signedRes = await fetch(`${getApiUrl()}/models/upload-url`, {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ name: fileName }),
+        });
+
+        if (signedRes.ok) {
+            const { url, method } = (await signedRes.json()) as { url?: string; method?: string };
+            if (url) {
+                const uploadMethod = method ?? "PUT";
+                const uploadRes = await fetch(url, {
+                    method: uploadMethod,
+                    headers: { "Content-Type": fileType },
+                    body: fileBuffer,
+                });
+                return new Response(
+                    JSON.stringify({ ok: uploadRes.ok, status: uploadRes.status }),
+                    { status: uploadRes.ok ? 200 : uploadRes.status }
+                );
+            }
+        }
+
+        const fallback = await fetch(`${getApiUrl()}/models`, {
+            method: "POST",
+            headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": fileType,
+                "Content-Disposition": `attachment; filename="${encodeURIComponent(fileName)}"`,
+            },
+            body: fileBuffer,
+        });
+        const resBody = await fallback.text();
+        return new Response(resBody, {
+            status: fallback.status,
+            headers: { "Content-Type": "application/json" },
+        });
+    } catch {
+        return new Response(JSON.stringify({ error: "upstream unreachable" }), { status: 502 });
+    }
 };
-
-
-

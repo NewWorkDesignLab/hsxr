@@ -13,7 +13,22 @@ export const POST: APIRoute = async ({ request }) => {
     });
     const resBody = await upstream.text();
     const headers = new Headers({ "Content-Type": "application/json" });
-    const setCookie = upstream.headers.get("set-cookie");
-    if (setCookie) headers.set("set-cookie", setCookie);
+
+    const rawCookie = upstream.headers.get("set-cookie");
+    if (rawCookie) {
+        const rewritten = rawCookie
+            .split(/,(?=[^;]+=[^;]*)/)
+            .map(c =>
+                c
+                    .replace(/;\s*domain=[^;]*/gi, "")
+                    .replace(/;\s*samesite=none/gi, "; SameSite=Lax")
+                    .replace(/;\s*secure/gi, "")
+                    .trimEnd()
+                    + "; Path=/; HttpOnly"
+            )
+            .join(", ");
+        headers.set("set-cookie", rewritten);
+    }
+
     return new Response(resBody, { status: upstream.status, headers });
 };

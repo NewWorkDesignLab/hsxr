@@ -23,6 +23,8 @@ export const GET: APIRoute = async ({ request }) => {
     const cl = upstream.headers.get("content-length");
     if (cd) headers.set("content-disposition", cd);
     headers.set("content-type", ct);
+    headers.set("cache-control", "no-store");
+    headers.set("content-encoding", "identity");
     if (cl) headers.set("content-length", cl);
     return new Response(upstream.body, { status: 200, headers });
 };

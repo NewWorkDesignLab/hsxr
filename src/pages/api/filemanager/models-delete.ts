@@ -1,11 +1,11 @@
 import type { APIRoute } from "astro";
 import { getApiUrl } from "../../../lib/endpoint-config";
-import { getBearerToken, unauthorized } from "./_auth";
+import { authorize } from "./_auth";
 
 export const DELETE: APIRoute = async ({ request }) => {
-    const cookie = request.headers.get("cookie") ?? "";
-    const token = await getBearerToken(cookie);
-    if (!token) return unauthorized();
+    const auth = await authorize({ request });
+    if (auth.response) return auth.response;
+
     const url = new URL(request.url);
     const name = url.searchParams.get("name") ?? "";
     if (!name) {
@@ -13,7 +13,7 @@ export const DELETE: APIRoute = async ({ request }) => {
     }
     const upstream = await fetch(`${getApiUrl()}/models/${encodeURIComponent(name)}`, {
         method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${auth.token}` },
     });
     return new Response(null, { status: upstream.status });
 };

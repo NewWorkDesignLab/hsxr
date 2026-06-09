@@ -1,0 +1,433 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { createSupabaseServerClient } from "../lib/supabase-server";
+
+const supabase = createSupabaseServerClient(
+    Astro.cookies,
+    Astro.request.headers.get("Cookie") ?? "",
+);
+const {
+    data: { user },
+} = await supabase.auth.getUser();
+
+let displayName: string | null = null;
+if (user) {
+    const { data } = await supabase
+        .from("profiles")
+        .select("display_name")
+        .eq("id", user.id)
+        .single();
+    displayName =
+        data?.display_name ??
+        (user.user_metadata?.display_name as string | undefined) ??
+        user.email ??
+        null;
+}
+
+const url = new URL(Astro.request.url);
+const next = url.searchParams.get("next") ?? "/";
+const initialMode = url.searchParams.get("mode") ?? "";
+const initialToast = url.searchParams.get("toast") ?? "";
+const initialMsg = url.searchParams.get("msg") ?? "";
+---
+<Layout>
+    <main class="account-main">
+        <div id="account-toast-host" class="account-toast-host" aria-live="polite"></div>
+
+        {user ? (
+            <section class="account-card">
+                <h1 class="account-title">Account</h1>
+
+                <div class="account-row">
+                    <span class="account-row-label">Display Name</span>
+                    <span class="account-row-value" id="display-name-value">{displayName ?? "—"}</span>
+                    <button
+                        type="button"
+                        class="account-icon-btn"
+                        id="open-change-name-btn"
+                        aria-label="Edit display name"
+                        title="Edit display name"
+                    >✏️</button>
+                </div>
+
+                <div class="account-row">
+                    <span class="account-row-label">Email</span>
+                    <span class="account-row-value">{user.email}</span>
+                </div>
+
+                <div class="account-actions">
+                    <button type="button" class="account-btn-secondary" id="open-change-pw-btn">
+                        Change Password
+                    </button>
+                    <button type="button" class="account-btn-danger" id="logout-btn">
+                        Logout
+                    </button>
+                </div>
+            </section>
+
+            <!-- Change Password Modal -->
+            <div class="account-modal-overlay hidden" id="change-pw-modal" role="dialog" aria-modal="true" aria-labelledby="change-pw-title">
+                <div class="account-modal">
+                    <h2 id="change-pw-title" class="account-modal-title">Change Password</h2>
+                    <form id="change-pw-form" class="account-form" novalidate>
+                        <label class="account-label" id="change-pw-current-label">
+                            <span>Current password</span>
+                            <input class="account-input" type="password" id="change-pw-current" autocomplete="current-password" />
+                        </label>
+                        <label class="account-label">
+                            <span>New password</span>
+                            <input class="account-input" type="password" id="change-pw-new" minlength="8" autocomplete="new-password" required />
+                        </label>
+                        <label class="account-label">
+                            <span>Confirm new password</span>
+                            <input class="account-input" type="password" id="change-pw-confirm" minlength="8" autocomplete="new-password" required />
+                        </label>
+                        <div class="account-error hidden" id="change-pw-error"></div>
+                        <div class="account-modal-actions">
+                            <button type="button" class="account-btn-secondary" data-modal-close="change-pw-modal">Cancel</button>
+                            <button type="submit" class="account-btn-primary">Save</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Change Display Name Modal -->
+            <div class="account-modal-overlay hidden" id="change-name-modal" role="dialog" aria-modal="true" aria-labelledby="change-name-title">
+                <div class="account-modal">
+                    <h2 id="change-name-title" class="account-modal-title">Change Display Name</h2>
+                    <form id="change-name-form" class="account-form" novalidate>
+                        <label class="account-label">
+                            <span>Display name</span>
+                            <input
+                                class="account-input"
+                                type="text"
+                                id="change-name-input"
+                                minlength="3"
+                                maxlength="24"
+                                value={displayName ?? ""}
+                                required
+                            />
+                        </label>
+                        <div class="account-error hidden" id="change-name-error"></div>
+                        <div class="account-modal-actions">
+                            <button type="button" class="account-btn-secondary" data-modal-close="change-name-modal">Cancel</button>
+                            <button type="submit" class="account-btn-primary">Save</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        ) : (
+            <section class="account-card">
+                <h1 class="account-title">Account</h1>
+
+                <div class="account-tabs" role="tablist">
+                    <button type="button" class="account-tab active" id="tab-login" role="tab" aria-selected="true">Login</button>
+                    <button type="button" class="account-tab" id="tab-register" role="tab" aria-selected="false">Register</button>
+                </div>
+
+                <form id="login-form" class="account-form" autocomplete="on" novalidate>
+                    <label class="account-label">
+                        <span>Email</span>
+                        <input class="account-input" type="email" id="login-email" autocomplete="email" required />
+                    </label>
+                    <label class="account-label">
+                        <span>Password</span>
+                        <input class="account-input" type="password" id="login-password" autocomplete="current-password" required />
+                    </label>
+                    <div class="account-error hidden" id="login-error"></div>
+                    <button type="submit" class="account-btn-primary" id="login-submit">Login</button>
+                    <button type="button" class="account-btn-link" id="show-forgot-btn">Forgot password?</button>
+                </form>
+
+                <form id="forgot-form" class="account-form hidden" novalidate>
+                    <p class="account-help">Enter your email and we'll send you a reset link.</p>
+                    <label class="account-label">
+                        <span>Email</span>
+                        <input class="account-input" type="email" id="forgot-email" autocomplete="email" required />
+                    </label>
+                    <div class="account-error hidden" id="forgot-error"></div>
+                    <div class="account-success hidden" id="forgot-success">Reset link sent. Check your inbox.</div>
+                    <button type="submit" class="account-btn-primary" id="forgot-submit">Send reset link</button>
+                    <button type="button" class="account-btn-link" id="back-to-login-btn">Back to login</button>
+                </form>
+
+                <form id="register-form" class="account-form hidden" autocomplete="on" novalidate>
+                    <label class="account-label">
+                        <span>Email</span>
+                        <input class="account-input" type="email" id="reg-email" autocomplete="email" required />
+                    </label>
+                    <label class="account-label">
+                        <span>Display name</span>
+                        <input class="account-input" type="text" id="reg-display-name" minlength="3" maxlength="24" required />
+                    </label>
+                    <label class="account-label">
+                        <span>Password</span>
+                        <input class="account-input" type="password" id="reg-password" minlength="8" autocomplete="new-password" required />
+                    </label>
+                    <label class="account-label">
+                        <span>Confirm password</span>
+                        <input class="account-input" type="password" id="reg-password-confirm" minlength="8" autocomplete="new-password" required />
+                    </label>
+                    <div class="account-error hidden" id="register-error"></div>
+                    <button type="submit" class="account-btn-primary" id="register-submit">Create account</button>
+                </form>
+                <div id="register-done" class="account-register-done hidden">
+                    <div class="account-success">
+                        Account created! Check your inbox for the confirmation link, then come back to log in.
+                    </div>
+                    <button type="button" class="account-btn-link" id="reg-back-to-login">← Back to login</button>
+                </div>
+            </section>
+        )}
+    </main>
+</Layout>
+
+<script define:vars={{ next, initialMode, initialToast, initialMsg, isLoggedIn: !!user }}>
+(() => {
+    const NEXT = next || "/";
+
+    const TOAST_HOST = document.getElementById("account-toast-host");
+    function showToast(kind, msg) {
+        if (!TOAST_HOST || !msg) return;
+        const el = document.createElement("div");
+        el.className = `account-toast account-toast-${kind}`;
+        el.textContent = msg;
+        TOAST_HOST.appendChild(el);
+        setTimeout(() => {
+            el.classList.add("account-toast-leave");
+            setTimeout(() => el.remove(), 300);
+        }, 3500);
+    }
+
+    if (initialToast && initialMsg) {
+        showToast(initialToast, initialMsg);
+    }
+
+    if (initialToast || initialMsg || initialMode) {
+        const cleanUrl = new URL(window.location.href);
+        cleanUrl.searchParams.delete("toast");
+        cleanUrl.searchParams.delete("msg");
+        cleanUrl.searchParams.delete("mode");
+        history.replaceState({}, "", cleanUrl.pathname + (cleanUrl.search || ""));
+    }
+
+    const $ = (id) => document.getElementById(id);
+    function setError(el, msg) {
+        if (!el) return;
+        if (msg) { el.textContent = msg; el.classList.remove("hidden"); }
+        else { el.textContent = ""; el.classList.add("hidden"); }
+    }
+    function setSuccess(el, visible) {
+        if (!el) return;
+        el.classList.toggle("hidden", !visible);
+    }
+    function show(el, visible) { el?.classList.toggle("hidden", !visible); }
+    function disable(btn, busy, busyLabel = "…") {
+        if (!btn) return;
+        if (busy) {
+            btn.dataset.origLabel = btn.textContent ?? "";
+            btn.textContent = busyLabel;
+            btn.disabled = true;
+        } else {
+            if (btn.dataset.origLabel) btn.textContent = btn.dataset.origLabel;
+            btn.disabled = false;
+        }
+    }
+    async function postJson(url, body) {
+        const res = await fetch(url, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body ?? {}),
+        });
+        const data = await res.json().catch(() => ({}));
+        return { res, data };
+    }
+
+    function setInputValidity(input, valid) {
+        input.classList.toggle("account-input-ok", valid);
+        input.classList.toggle("account-input-error", !valid);
+    }
+
+    function wirePwMatch(pwId, confirmId) {
+        const pwEl = $(pwId);
+        const cfEl = $(confirmId);
+        if (!pwEl || !cfEl) return;
+        function check() {
+            if (!pwEl.value && !cfEl.value) {
+                pwEl.classList.remove("account-input-ok", "account-input-error");
+                cfEl.classList.remove("account-input-ok", "account-input-error");
+                return;
+            }
+            const match = pwEl.value === cfEl.value;
+            setInputValidity(pwEl, match);
+            setInputValidity(cfEl, match);
+        }
+        pwEl.addEventListener("input", check);
+        cfEl.addEventListener("input", check);
+    }
+
+    function openModal(id) { $(id)?.classList.remove("hidden"); }
+    function closeModal(id) { $(id)?.classList.add("hidden"); }
+    document.querySelectorAll("[data-modal-close]").forEach((btn) => {
+        btn.addEventListener("click", () => closeModal(btn.getAttribute("data-modal-close")));
+    });
+    document.querySelectorAll(".account-modal-overlay").forEach((overlay) => {
+        overlay.addEventListener("click", (ev) => {
+            if (ev.target === overlay) overlay.classList.add("hidden");
+        });
+    });
+
+    if (isLoggedIn) {
+        let recoveryMode = initialMode === "update-password";
+
+        $("logout-btn")?.addEventListener("click", async () => {
+            await fetch("/api/auth/supabase-logout", { method: "POST" });
+            window.location.href = "/account";
+        });
+
+        $("open-change-pw-btn")?.addEventListener("click", () => {
+            const form = $("change-pw-form");
+            form?.reset();
+            setError($("change-pw-error"), "");
+            $("change-pw-current-label")?.classList.toggle("hidden", recoveryMode);
+            openModal("change-pw-modal");
+        });
+
+        $("change-pw-form")?.addEventListener("submit", async (ev) => {
+            ev.preventDefault();
+            const errEl = $("change-pw-error");
+            const newPw = $("change-pw-new").value;
+            const confirmPw = $("change-pw-confirm").value;
+            const currentPw = $("change-pw-current").value;
+            if (newPw.length < 8) { setError(errEl, "Password must be at least 8 characters."); return; }
+            if (newPw !== confirmPw) { setError(errEl, "Passwords do not match."); return; }
+            const submitBtn = ev.submitter;
+            disable(submitBtn, true);
+            const payload = { password: newPw };
+            if (!recoveryMode && currentPw) payload.currentPassword = currentPw;
+            const { res, data } = await postJson("/api/auth/update-password", payload);
+            disable(submitBtn, false);
+            if (!res.ok) { setError(errEl, data.error ?? "Failed to update password."); return; }
+            closeModal("change-pw-modal");
+            recoveryMode = false;
+            showToast("success", "Password updated.");
+        });
+
+        $("open-change-name-btn")?.addEventListener("click", () => {
+            setError($("change-name-error"), "");
+            openModal("change-name-modal");
+        });
+
+        $("change-name-form")?.addEventListener("submit", async (ev) => {
+            ev.preventDefault();
+            const errEl = $("change-name-error");
+            const value = $("change-name-input").value.trim();
+            if (value.length < 3 || value.length > 24) {
+                setError(errEl, "Display name must be 3–24 characters."); return;
+            }
+            const submitBtn = ev.submitter;
+            disable(submitBtn, true);
+            const { res, data } = await postJson("/api/auth/update-display-name", { display_name: value });
+            disable(submitBtn, false);
+            if (!res.ok) { setError(errEl, data.error ?? "Failed to update display name."); return; }
+            closeModal("change-name-modal");
+            const valEl = $("display-name-value");
+            if (valEl) valEl.textContent = data.display_name ?? value;
+            showToast("success", "Display name updated.");
+        });
+
+        wirePwMatch("change-pw-new", "change-pw-confirm");
+        if (recoveryMode) {
+            $("change-pw-current-label")?.classList.add("hidden");
+            openModal("change-pw-modal");
+        }
+        return;
+    }
+
+    const tabLogin = $("tab-login");
+    const tabRegister = $("tab-register");
+    const loginForm = $("login-form");
+    const registerForm = $("register-form");
+    const forgotForm = $("forgot-form");
+
+    function activateTab(which) {
+        const isLogin = which === "login";
+        tabLogin?.classList.toggle("active", isLogin);
+        tabRegister?.classList.toggle("active", !isLogin);
+        tabLogin?.setAttribute("aria-selected", String(isLogin));
+        tabRegister?.setAttribute("aria-selected", String(!isLogin));
+        show(loginForm, isLogin);
+        show(registerForm, !isLogin);
+        show(forgotForm, false);
+    }
+
+    tabLogin?.addEventListener("click", () => activateTab("login"));
+    tabRegister?.addEventListener("click", () => activateTab("register"));
+
+    $("show-forgot-btn")?.addEventListener("click", () => {
+        show(loginForm, false);
+        show(registerForm, false);
+        show(forgotForm, true);
+        setError($("forgot-error"), "");
+        setSuccess($("forgot-success"), false);
+    });
+    $("back-to-login-btn")?.addEventListener("click", () => activateTab("login"));
+    wirePwMatch("reg-password", "reg-password-confirm");
+
+    loginForm?.addEventListener("submit", async (ev) => {
+        ev.preventDefault();
+        const errEl = $("login-error");
+        const submitBtn = $("login-submit");
+        setError(errEl, "");
+        disable(submitBtn, true);
+        const { res, data } = await postJson("/api/auth/supabase-login", {
+            email: $("login-email").value,
+            password: $("login-password").value,
+        });
+        disable(submitBtn, false);
+        if (!res.ok) { setError(errEl, data.error ?? "Login failed."); return; }
+        window.location.href = NEXT;
+    });
+
+    registerForm?.addEventListener("submit", async (ev) => {
+        ev.preventDefault();
+        const errEl = $("register-error");
+        const submitBtn = $("register-submit");
+        setError(errEl, "");
+        const pw = $("reg-password").value;
+        const pwc = $("reg-password-confirm").value;
+        if (pw !== pwc) { setError(errEl, "Passwords do not match."); return; }
+        disable(submitBtn, true);
+        const { res, data } = await postJson("/api/auth/supabase-register", {
+            email: $("reg-email").value,
+            password: pw,
+            display_name: $("reg-display-name").value,
+        });
+        disable(submitBtn, false);
+        if (!res.ok) { setError(errEl, data.error ?? "Registration failed."); return; }
+        if (data.needsConfirmation) {
+            show(registerForm, false);
+            show($("register-done"), true);
+            $("reg-back-to-login")?.addEventListener("click", () => activateTab("login"), { once: true });
+        } else {
+            window.location.href = NEXT;
+        }
+    });
+
+    forgotForm?.addEventListener("submit", async (ev) => {
+        ev.preventDefault();
+        const errEl = $("forgot-error");
+        const successEl = $("forgot-success");
+        const submitBtn = $("forgot-submit");
+        setError(errEl, "");
+        setSuccess(successEl, false);
+        disable(submitBtn, true);
+        const { res, data } = await postJson("/api/auth/reset-password", {
+            email: $("forgot-email").value,
+        });
+        disable(submitBtn, false);
+        if (!res.ok) { setError(errEl, data.error ?? "Could not send reset link."); return; }
+        setSuccess(successEl, true);
+    });
+})();
+</script>

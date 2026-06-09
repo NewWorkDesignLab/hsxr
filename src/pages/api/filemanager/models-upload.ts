@@ -1,11 +1,11 @@
 import type { APIRoute } from "astro";
 import { getApiUrl } from "../../../lib/endpoint-config";
-import { getBearerToken, unauthorized } from "./_auth";
+import { authorize } from "./_auth";
 
 export const POST: APIRoute = async ({ request }) => {
-    const cookie = request.headers.get("cookie") ?? "";
-    const token = await getBearerToken(cookie);
-    if (!token) return unauthorized();
+    const auth = await authorize({ request });
+    if (auth.response) return auth.response;
+    const token = auth.token;
 
     let fileBuffer: ArrayBuffer;
     let fileName = "upload.glb";

@@ -37,12 +37,10 @@ export const GET: APIRoute = async ({ request }) => {
         );
     }
 
-    // Signup confirmed — sign the user out so they explicitly log in.
-    await supabase.auth.signOut({ scope: 'local' });
+    await supabase.auth.signOut({ scope: 'global' }).catch(() => undefined);
     return buildRedirect(
         `/account?toast=success&msg=${encodeURIComponent(
             'Email confirmed! You can now log in.',
         )}`,
-        responseHeaders,
     );
 };

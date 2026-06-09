@@ -1,11 +1,39 @@
 import type { APIContext } from "astro";
-import { getApiUrl } from "../../../lib/endpoint-config";
 import { createSupabaseServerClientFromRequest } from "../../../lib/supabase-server";
 
-export function unauthorized(msg = "Unauthorized") {
+export function appendAuthHeaders(target: Headers, auth: Headers | undefined): void {
+    if (!auth) return;
+    const getSetCookie = (auth as unknown as { getSetCookie?: () => string[] })
+        .getSetCookie;
+    if (typeof getSetCookie === "function") {
+        for (const cookie of getSetCookie.call(auth)) {
+            target.append("Set-Cookie", cookie);
+        }
+        return;
+    }
+    auth.forEach((value, key) => {
+        if (key.toLowerCase() === "set-cookie") {
+            target.append("Set-Cookie", value);
+        }
+    });
+}
+
+export function authedResponse(
+    body: BodyInit | null,
+    init: ResponseInit,
+    authHeaders: Headers | undefined,
+): Response {
+    const headers = new Headers(init.headers);
+    appendAuthHeaders(headers, authHeaders);
+    return new Response(body, { ...init, headers });
+}
+
+export function unauthorized(msg = "Unauthorized", authHeaders?: Headers) {
+    const headers = new Headers({ "Content-Type": "application/json" });
+    appendAuthHeaders(headers, authHeaders);
     return new Response(JSON.stringify({ error: msg }), {
         status: 401,
-        headers: { "Content-Type": "application/json" },
+        headers,
     });
 }
 
@@ -15,92 +43,27 @@ export async function requireSupabaseUser(request: Request) {
     const {
         data: { user },
     } = await supabase.auth.getUser();
-    return user ?? null;
-}
-
-const TOKEN_TTL_SECONDS = 120;
-const TOKEN_REFRESH_SAFETY_MS = 10_000;
-
-interface CachedToken {
-    token: string;
-    expiresAt: number;
-}
-
-let cachedToken: CachedToken | null = null;
-let inflight: Promise<string | null> | null = null;
-
-function extractSessionCookie(setCookieHeader: string | null): string | null {
-    if (!setCookieHeader) return null;
-    const parts = setCookieHeader.split(/,(?=[^;]+=[^;]*)/);
-    const pairs: string[] = [];
-    for (const part of parts) {
-        const first = part.split(";")[0]?.trim();
-        if (first && first.includes("=")) pairs.push(first);
-    }
-    return pairs.length ? pairs.join("; ") : null;
-}
-
-async function fetchBearerFromUpstream(): Promise<string | null> {
-    const password = process.env.HSXR_FILEMANAGER_PASSWORD;
-    if (!password) {
-        return null;
-    }
-
-    const loginRes = await fetch(`${getApiUrl()}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ password }),
-    });
-    if (!loginRes.ok) return null;
-
-    const sessionCookie = extractSessionCookie(loginRes.headers.get("set-cookie"));
-    if (!sessionCookie) return null;
-
-    const tokenRes = await fetch(`${getApiUrl()}/auth/token?ttl=${TOKEN_TTL_SECONDS}`, {
-        method: "POST",
-        headers: { cookie: sessionCookie },
-    });
-    if (!tokenRes.ok) return null;
-
-    const data = (await tokenRes.json()) as { token?: string };
-    return data.token ?? null;
-}
-
-export async function getBearerToken(): Promise<string | null> {
-    const now = Date.now();
-    if (cachedToken && cachedToken.expiresAt > now) {
-        return cachedToken.token;
-    }
-
-    if (inflight) return inflight;
-
-    inflight = (async () => {
-        const token = await fetchBearerFromUpstream();
-        if (token) {
-            cachedToken = {
-                token,
-                expiresAt: Date.now() + TOKEN_TTL_SECONDS * 1000 - TOKEN_REFRESH_SAFETY_MS,
-            };
-        }
-        return token;
-    })();
-
-    try {
-        return await inflight;
-    } finally {
-        inflight = null;
-    }
+    return { user: user ?? null, authHeaders: responseHeaders };
 }
 
 export async function authorize(
     context: Pick<APIContext, "request">,
-): Promise<{ token: string; response?: undefined } | { token?: undefined; response: Response }> {
-    const user = await requireSupabaseUser(context.request);
-    if (!user) return { response: unauthorized() };
+): Promise<
+    | { upstreamHeaders: Record<string, string>; authHeaders: Headers; response?: undefined }
+    | { upstreamHeaders?: undefined; authHeaders?: undefined; response: Response }
+> {
+    const { user, authHeaders } = await requireSupabaseUser(context.request);
+    if (!user) return { response: unauthorized("Not logged in.", authHeaders) };
 
-    const token = await getBearerToken();
-    if (!token) return { response: unauthorized("Upstream token unavailable") };
+    const apiKey = process.env.HSXR_API_KEY ?? import.meta.env.HSXR_API_KEY;
+    if (!apiKey) {
+        return {
+            response: unauthorized("Server is missing HSXR_API_KEY.", authHeaders),
+        };
+    }
 
-    return { token };
+    return {
+        upstreamHeaders: { "X-API-Key": apiKey },
+        authHeaders,
+    };
 }
-

@@ -8,6 +8,7 @@ const currentUser = await getOptionalUser(
 );
 const isAccountPage = Astro.url.pathname === "/account";
 const isFilemanagerPage = Astro.url.pathname === "/filemanager";
+const isHomePage = Astro.url.pathname === "/";
 ---
 
 <html lang="en">
@@ -24,6 +25,13 @@ const isFilemanagerPage = Astro.url.pathname === "/filemanager";
     <title>HoloSpace-XR</title>
 </head>
 <body>
+    {!isHomePage && (
+        <a href="/" class="home-link" aria-label="Home" title="Home">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1V9.5z"/>
+            </svg>
+        </a>
+    )}
     <div class="header-actions">
         {currentUser && !isFilemanagerPage && (
             <a href="/filemanager" class="filemanager-icon" aria-label="File Manager" title="File Manager">

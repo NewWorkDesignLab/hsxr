@@ -349,6 +349,7 @@ const initialMsg = url.searchParams.get("msg") ?? "";
     const loginForm = $("login-form");
     const registerForm = $("register-form");
     const forgotForm = $("forgot-form");
+    const registerDone = $("register-done");
 
     function activateTab(which) {
         const isLogin = which === "login";
@@ -359,6 +360,7 @@ const initialMsg = url.searchParams.get("msg") ?? "";
         show(loginForm, isLogin);
         show(registerForm, !isLogin);
         show(forgotForm, false);
+        show(registerDone, false);
     }
 
     tabLogin?.addEventListener("click", () => activateTab("login"));
@@ -367,11 +369,13 @@ const initialMsg = url.searchParams.get("msg") ?? "";
     $("show-forgot-btn")?.addEventListener("click", () => {
         show(loginForm, false);
         show(registerForm, false);
+        show(registerDone, false);
         show(forgotForm, true);
         setError($("forgot-error"), "");
         setSuccess($("forgot-success"), false);
     });
     $("back-to-login-btn")?.addEventListener("click", () => activateTab("login"));
+    $("reg-back-to-login")?.addEventListener("click", () => activateTab("login"));
     wirePwMatch("reg-password", "reg-password-confirm");
 
     loginForm?.addEventListener("submit", async (ev) => {
@@ -407,8 +411,7 @@ const initialMsg = url.searchParams.get("msg") ?? "";
         if (!res.ok) { setError(errEl, data.error ?? "Registration failed."); return; }
         if (data.needsConfirmation) {
             show(registerForm, false);
-            show($("register-done"), true);
-            $("reg-back-to-login")?.addEventListener("click", () => activateTab("login"), { once: true });
+            show(registerDone, true);
         } else {
             window.location.href = NEXT;
         }

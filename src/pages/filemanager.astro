@@ -211,8 +211,11 @@ async function deleteModel(name: string): Promise<void> {
     if (!confirm(`Delete "${name}"?`)) return;
     const r = await fetch(`/api/filemanager/models-delete?name=${encodeURIComponent(name)}`, { method: "DELETE" });
     if (r.status === 401) { showAuthError("Your session has expired. Please log in again."); return; }
-    if (r.ok || r.status === 204) { loadModels(); }
-    else { alert("Delete failed"); }
+    if (r.ok || r.status === 204) {
+        loadModels();
+    } else {
+        alert("Delete failed. Please try again.");
+    }
 }
 
 function setProgress(pct: number, msg = "", error = false, indeterminate = false): void {

@@ -24,9 +24,12 @@ export function createSupabaseServerClient(
         cookies: {
             getAll: () => parseCookies(requestCookieHeader),
             setAll: (cookiesToSet) =>
-                cookiesToSet.forEach(({ name, value, options }) =>
-                    cookies.set(name, value, options),
-                ),
+                cookiesToSet.forEach(({ name, value, options }) => {
+                    try {
+                        cookies.set(name, value, options);
+                    } catch {
+                    }
+                }),
         },
     });
 }

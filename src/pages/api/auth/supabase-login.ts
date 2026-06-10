@@ -20,10 +20,27 @@ export const POST: APIRoute = async ({ request }) => {
         password: body.password,
     });
     if (error || !data.session) {
-        return new Response(JSON.stringify({ error: error?.message ?? 'Login failed.' }), {
-            status: 401,
-            headers: { 'Content-Type': 'application/json' },
-        });
+        const rawMsg = error?.message ?? 'Login failed.';
+        const code = (error as { code?: string } | null)?.code;
+        const emailNotConfirmed =
+            code === 'email_not_confirmed' ||
+            /email not confirmed/i.test(rawMsg);
+
+        const friendlyMsg = emailNotConfirmed
+            ? 'Email not confirmed. Please check your inbox or request a new confirmation link.'
+            : rawMsg;
+
+        return new Response(
+            JSON.stringify({
+                error: friendlyMsg,
+                code: emailNotConfirmed ? 'email_not_confirmed' : code,
+                emailNotConfirmed,
+            }),
+            {
+                status: emailNotConfirmed ? 403 : 401,
+                headers: { 'Content-Type': 'application/json' },
+            },
+        );
     }
 
     const { data: profile } = await supabase

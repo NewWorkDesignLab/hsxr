@@ -27,12 +27,10 @@ if (user) {
 const url = new URL(Astro.request.url);
 const next = url.searchParams.get("next") ?? "/";
 const initialMode = url.searchParams.get("mode") ?? "";
-const initialToast = url.searchParams.get("toast") ?? "";
 const initialMsg = url.searchParams.get("msg") ?? "";
 ---
 <Layout>
     <main class="account-main">
-        <div id="account-toast-host" class="account-toast-host" aria-live="polite"></div>
 
         {user ? (
             <section class="account-card">
@@ -125,6 +123,22 @@ const initialMsg = url.searchParams.get("msg") ?? "";
                     <button type="button" class="account-tab" id="tab-register" role="tab" aria-selected="false">Register</button>
                 </div>
 
+                <form id="resend-confirm-form" class="account-form hidden" novalidate>
+                    <p class="account-help">
+                        Need a new confirmation email? Enter your address and we'll send a fresh link.
+                    </p>
+                    <label class="account-label">
+                        <span>Email</span>
+                        <input class="account-input" type="email" id="resend-confirm-email" autocomplete="email" required />
+                    </label>
+                    <div class="account-error hidden" id="resend-confirm-error"></div>
+                    <div class="account-success hidden" id="resend-confirm-success">
+                        If the address is registered and not yet confirmed, a new email is on its way.
+                    </div>
+                    <button type="submit" class="account-btn-primary" id="resend-confirm-submit">Send confirmation email</button>
+                    <button type="button" class="account-btn-link" id="resend-back-to-login">← Back to login</button>
+                </form>
+
                 <form id="login-form" class="account-form" autocomplete="on" novalidate>
                     <label class="account-label">
                         <span>Email</span>
@@ -135,6 +149,11 @@ const initialMsg = url.searchParams.get("msg") ?? "";
                         <input class="account-input" type="password" id="login-password" autocomplete="current-password" required />
                     </label>
                     <div class="account-error hidden" id="login-error"></div>
+                    <button
+                        type="button"
+                        class="account-btn-link hidden"
+                        id="login-resend-btn"
+                    >Resend confirmation email</button>
                     <button type="submit" class="account-btn-primary" id="login-submit">Login</button>
                     <button type="button" class="account-btn-link" id="show-forgot-btn">Forgot password?</button>
                 </form>
@@ -175,35 +194,28 @@ const initialMsg = url.searchParams.get("msg") ?? "";
                     <div class="account-success">
                         Account created! Check your inbox for the confirmation link, then come back to log in.
                     </div>
-                    <button type="button" class="account-btn-link" id="reg-back-to-login">← Back to login</button>
+                    <p class="account-help" id="register-done-email-hint">
+                        Didn't receive it? Check your spam folder or request a new email.
+                    </p>
+                    <div class="account-error hidden" id="register-resend-error"></div>
+                    <div class="account-success hidden" id="register-resend-success">
+                        Confirmation email re-sent. Check your inbox.
+                    </div>
+                    <div class="account-register-done-actions">
+                        <button type="button" class="account-btn-secondary" id="register-resend-btn">Resend confirmation email</button>
+                        <button type="button" class="account-btn-link" id="reg-back-to-login">← Back to login</button>
+                    </div>
                 </div>
             </section>
         )}
     </main>
 </Layout>
 
-<script define:vars={{ next, initialMode, initialToast, initialMsg, isLoggedIn: !!user }}>
+<script define:vars={{ next, initialMode, initialMsg, isLoggedIn: !!user }}>
 (() => {
     const NEXT = next || "/";
 
-    const TOAST_HOST = document.getElementById("account-toast-host");
-    function showToast(kind, msg) {
-        if (!TOAST_HOST || !msg) return;
-        const el = document.createElement("div");
-        el.className = `account-toast account-toast-${kind}`;
-        el.textContent = msg;
-        TOAST_HOST.appendChild(el);
-        setTimeout(() => {
-            el.classList.add("account-toast-leave");
-            setTimeout(() => el.remove(), 300);
-        }, 3500);
-    }
-
-    if (initialToast && initialMsg) {
-        showToast(initialToast, initialMsg);
-    }
-
-    if (initialToast || initialMsg || initialMode) {
+    if (initialMode) {
         const cleanUrl = new URL(window.location.href);
         cleanUrl.searchParams.delete("toast");
         cleanUrl.searchParams.delete("msg");
@@ -222,25 +234,57 @@ const initialMsg = url.searchParams.get("msg") ?? "";
         el.classList.toggle("hidden", !visible);
     }
     function show(el, visible) { el?.classList.toggle("hidden", !visible); }
-    function disable(btn, busy, busyLabel = "…") {
+
+    const LOADING_HTML =
+        '<span class="account-dots" aria-hidden="true">' +
+        '<span></span><span></span><span></span>' +
+        '</span>' +
+        '<span class="account-sr-only">Loading…</span>';
+
+    function disable(btn, busy, busyLabel) {
         if (!btn) return;
         if (busy) {
-            btn.dataset.origLabel = btn.textContent ?? "";
-            btn.textContent = busyLabel;
+            if (btn.dataset.origLabel === undefined) {
+                btn.dataset.origLabel = btn.innerHTML;
+            }
+            if (busyLabel) {
+                btn.textContent = busyLabel;
+            } else {
+                btn.innerHTML = LOADING_HTML;
+            }
+            btn.classList.add("is-loading");
+            btn.setAttribute("aria-busy", "true");
             btn.disabled = true;
         } else {
-            if (btn.dataset.origLabel) btn.textContent = btn.dataset.origLabel;
+            if (btn.dataset.origLabel !== undefined) {
+                btn.innerHTML = btn.dataset.origLabel;
+                delete btn.dataset.origLabel;
+            }
+            btn.classList.remove("is-loading");
+            btn.removeAttribute("aria-busy");
             btn.disabled = false;
         }
     }
     async function postJson(url, body) {
-        const res = await fetch(url, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(body ?? {}),
-        });
-        const data = await res.json().catch(() => ({}));
-        return { res, data };
+        try {
+            const res = await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(body ?? {}),
+            });
+            const data = await res.json().catch(() => ({}));
+            return { res, data };
+        } catch (err) {
+            // Network failure / offline / aborted — surface a uniform error shape.
+            return {
+                res: null,
+                data: { error: "Network error. Please check your connection and try again." },
+            };
+        }
+    }
+
+    function notifyError(errEl, msg) {
+        setError(errEl, msg);
     }
 
     function setInputValidity(input, valid) {
@@ -280,8 +324,14 @@ const initialMsg = url.searchParams.get("msg") ?? "";
     if (isLoggedIn) {
         let recoveryMode = initialMode === "update-password";
 
-        $("logout-btn")?.addEventListener("click", async () => {
-            await fetch("/api/auth/supabase-logout", { method: "POST" });
+        $("logout-btn")?.addEventListener("click", async (ev) => {
+            const btn = ev.currentTarget;
+            disable(btn, true);
+            const { res, data } = await postJson("/api/auth/supabase-logout", {});
+            if (!res || !res.ok) {
+                disable(btn, false);
+                return;
+            }
             window.location.href = "/account";
         });
 
@@ -299,18 +349,26 @@ const initialMsg = url.searchParams.get("msg") ?? "";
             const newPw = $("change-pw-new").value;
             const confirmPw = $("change-pw-confirm").value;
             const currentPw = $("change-pw-current").value;
-            if (newPw.length < 8) { setError(errEl, "Password must be at least 8 characters."); return; }
-            if (newPw !== confirmPw) { setError(errEl, "Passwords do not match."); return; }
+            if (newPw.length < 8) {
+                notifyError(errEl, "Password must be at least 8 characters.");
+                return;
+            }
+            if (newPw !== confirmPw) {
+                notifyError(errEl, "Passwords do not match.");
+                return;
+            }
             const submitBtn = ev.submitter;
             disable(submitBtn, true);
             const payload = { password: newPw };
             if (!recoveryMode && currentPw) payload.currentPassword = currentPw;
             const { res, data } = await postJson("/api/auth/update-password", payload);
             disable(submitBtn, false);
-            if (!res.ok) { setError(errEl, data.error ?? "Failed to update password."); return; }
+            if (!res || !res.ok) {
+                notifyError(errEl, data?.error ?? "Failed to update password.");
+                return;
+            }
             closeModal("change-pw-modal");
             recoveryMode = false;
-            showToast("success", "Password updated.");
         });
 
         $("open-change-name-btn")?.addEventListener("click", () => {
@@ -323,23 +381,27 @@ const initialMsg = url.searchParams.get("msg") ?? "";
             const errEl = $("change-name-error");
             const value = $("change-name-input").value.trim();
             if (value.length < 3 || value.length > 24) {
-                setError(errEl, "Display name must be 3–24 characters."); return;
+                notifyError(errEl, "Display name must be 3–24 characters.");
+                return;
             }
             const submitBtn = ev.submitter;
             disable(submitBtn, true);
             const { res, data } = await postJson("/api/auth/update-display-name", { display_name: value });
             disable(submitBtn, false);
-            if (!res.ok) { setError(errEl, data.error ?? "Failed to update display name."); return; }
+            if (!res || !res.ok) {
+                notifyError(errEl, data?.error ?? "Failed to update display name.");
+                return;
+            }
             closeModal("change-name-modal");
             const valEl = $("display-name-value");
             if (valEl) valEl.textContent = data.display_name ?? value;
-            showToast("success", "Display name updated.");
         });
 
         wirePwMatch("change-pw-new", "change-pw-confirm");
         if (recoveryMode) {
             $("change-pw-current-label")?.classList.add("hidden");
             openModal("change-pw-modal");
+
         }
         return;
     }
@@ -350,6 +412,8 @@ const initialMsg = url.searchParams.get("msg") ?? "";
     const registerForm = $("register-form");
     const forgotForm = $("forgot-form");
     const registerDone = $("register-done");
+    const resendForm = $("resend-confirm-form");
+    const tabsEl = document.querySelector(".account-tabs");
 
     function activateTab(which) {
         const isLogin = which === "login";
@@ -361,6 +425,24 @@ const initialMsg = url.searchParams.get("msg") ?? "";
         show(registerForm, !isLogin);
         show(forgotForm, false);
         show(registerDone, false);
+        show(resendForm, false);
+        show(tabsEl, true);
+        // Reset transient login state
+        setError($("login-error"), "");
+        show($("login-resend-btn"), false);
+    }
+
+    function showResendConfirm(prefillEmail) {
+        show(loginForm, false);
+        show(registerForm, false);
+        show(forgotForm, false);
+        show(registerDone, false);
+        show(tabsEl, false);
+        show(resendForm, true);
+        setError($("resend-confirm-error"), "");
+        setSuccess($("resend-confirm-success"), false);
+        const emailInput = $("resend-confirm-email");
+        if (emailInput && prefillEmail) emailInput.value = prefillEmail;
     }
 
     tabLogin?.addEventListener("click", () => activateTab("login"));
@@ -370,26 +452,115 @@ const initialMsg = url.searchParams.get("msg") ?? "";
         show(loginForm, false);
         show(registerForm, false);
         show(registerDone, false);
+        show(resendForm, false);
         show(forgotForm, true);
         setError($("forgot-error"), "");
         setSuccess($("forgot-success"), false);
+        // Prefill forgot email from login email if available
+        const loginEmail = $("login-email")?.value;
+        const forgotEmail = $("forgot-email");
+        if (loginEmail && forgotEmail && !forgotEmail.value) {
+            forgotEmail.value = loginEmail;
+        }
     });
     $("back-to-login-btn")?.addEventListener("click", () => activateTab("login"));
     $("reg-back-to-login")?.addEventListener("click", () => activateTab("login"));
+    $("resend-back-to-login")?.addEventListener("click", () => activateTab("login"));
     wirePwMatch("reg-password", "reg-password-confirm");
+
+    // Handle deep-link modes from the email callback. We let the callback
+    // pass its own `msg`/`toast` for hard errors; these toasts only fire when
+    // the user lands here *without* an explicit message, so they always get
+    // some context for the unfamiliar form they're staring at.
+    if (initialMode === "resend-confirmation") {
+        showResendConfirm("");
+    } else if (initialMode === "recovery-expired") {
+        $("show-forgot-btn")?.click();
+    }
+
+    async function sendResendConfirmation(email, btn, errEl, successEl) {
+        setError(errEl, "");
+        setSuccess(successEl, false);
+        if (!email) {
+            notifyError(errEl, "Please enter your email.");
+            return false;
+        }
+        disable(btn, true);
+        const { res, data } = await postJson("/api/auth/resend-confirmation", { email });
+        disable(btn, false);
+        if (!res || !res.ok) {
+            const msg = data?.error ?? "Could not send confirmation email.";
+            notifyError(errEl, msg);
+            return false;
+        }
+        setSuccess(successEl, true);
+        return true;
+    }
+
+    resendForm?.addEventListener("submit", async (ev) => {
+        ev.preventDefault();
+        const submitBtn = $("resend-confirm-submit");
+        const email = $("resend-confirm-email")?.value.trim();
+        await sendResendConfirmation(
+            email,
+            submitBtn,
+            $("resend-confirm-error"),
+            $("resend-confirm-success"),
+        );
+    });
+
+    $("login-resend-btn")?.addEventListener("click", async (ev) => {
+        const btn = ev.currentTarget;
+        const email = $("login-email")?.value.trim();
+        const errEl = $("login-error");
+        if (!email) {
+            notifyError(errEl, "Enter your email above first.");
+            return;
+        }
+        // Reuse the login error area for status; on success, hide the resend button.
+        setError(errEl, "");
+        disable(btn, true);
+        const { res, data } = await postJson("/api/auth/resend-confirmation", { email });
+        disable(btn, false);
+        if (!res || !res.ok) {
+            notifyError(errEl, data?.error ?? "Could not send confirmation email.");
+            return;
+        }
+        show(btn, false);
+    });
+
+    $("register-resend-btn")?.addEventListener("click", async (ev) => {
+        const btn = ev.currentTarget;
+        const email = $("reg-email")?.value.trim();
+        await sendResendConfirmation(
+            email,
+            btn,
+            $("register-resend-error"),
+            $("register-resend-success"),
+        );
+    });
 
     loginForm?.addEventListener("submit", async (ev) => {
         ev.preventDefault();
         const errEl = $("login-error");
         const submitBtn = $("login-submit");
+        const resendBtn = $("login-resend-btn");
         setError(errEl, "");
+        show(resendBtn, false);
         disable(submitBtn, true);
         const { res, data } = await postJson("/api/auth/supabase-login", {
             email: $("login-email").value,
             password: $("login-password").value,
         });
-        disable(submitBtn, false);
-        if (!res.ok) { setError(errEl, data.error ?? "Login failed."); return; }
+        if (!res || !res.ok) {
+            disable(submitBtn, false);
+            const msg = data?.error ?? "Login failed.";
+            notifyError(errEl, msg);
+            if (data?.emailNotConfirmed || data?.code === "email_not_confirmed") {
+                show(resendBtn, true);
+            }
+            return;
+        }
         window.location.href = NEXT;
     });
 
@@ -400,7 +571,10 @@ const initialMsg = url.searchParams.get("msg") ?? "";
         setError(errEl, "");
         const pw = $("reg-password").value;
         const pwc = $("reg-password-confirm").value;
-        if (pw !== pwc) { setError(errEl, "Passwords do not match."); return; }
+        if (pw !== pwc) {
+            notifyError(errEl, "Passwords do not match.");
+            return;
+        }
         disable(submitBtn, true);
         const { res, data } = await postJson("/api/auth/supabase-register", {
             email: $("reg-email").value,
@@ -408,10 +582,15 @@ const initialMsg = url.searchParams.get("msg") ?? "";
             display_name: $("reg-display-name").value,
         });
         disable(submitBtn, false);
-        if (!res.ok) { setError(errEl, data.error ?? "Registration failed."); return; }
+        if (!res || !res.ok) {
+            notifyError(errEl, data?.error ?? "Registration failed.");
+            return;
+        }
         if (data.needsConfirmation) {
             show(registerForm, false);
             show(registerDone, true);
+            setError($("register-resend-error"), "");
+            setSuccess($("register-resend-success"), false);
         } else {
             window.location.href = NEXT;
         }
@@ -429,7 +608,10 @@ const initialMsg = url.searchParams.get("msg") ?? "";
             email: $("forgot-email").value,
         });
         disable(submitBtn, false);
-        if (!res.ok) { setError(errEl, data.error ?? "Could not send reset link."); return; }
+        if (!res || !res.ok) {
+            notifyError(errEl, data?.error ?? "Could not send reset link.");
+            return;
+        }
         setSuccess(successEl, true);
     });
 })();

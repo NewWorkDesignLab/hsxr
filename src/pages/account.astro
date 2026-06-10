@@ -139,6 +139,13 @@ const initialMsg = url.searchParams.get("msg") ?? "";
                     <button type="button" class="account-btn-link" id="resend-back-to-login">← Back to login</button>
                 </form>
 
+                <div id="confirmed-done" class="account-register-done hidden">
+                    <div class="account-success">
+                        ✅ Email successfully confirmed! You can now log in.
+                    </div>
+                    <button type="button" class="account-btn-primary" id="confirmed-go-login">Go to Login</button>
+                </div>
+
                 <form id="login-form" class="account-form" autocomplete="on" novalidate>
                     <label class="account-label">
                         <span>Email</span>
@@ -413,6 +420,7 @@ const initialMsg = url.searchParams.get("msg") ?? "";
     const forgotForm = $("forgot-form");
     const registerDone = $("register-done");
     const resendForm = $("resend-confirm-form");
+    const confirmedDone = $("confirmed-done");
     const tabsEl = document.querySelector(".account-tabs");
 
     function activateTab(which) {
@@ -426,10 +434,21 @@ const initialMsg = url.searchParams.get("msg") ?? "";
         show(forgotForm, false);
         show(registerDone, false);
         show(resendForm, false);
+        show(confirmedDone, false);
         show(tabsEl, true);
         // Reset transient login state
         setError($("login-error"), "");
         show($("login-resend-btn"), false);
+    }
+
+    function showConfirmedDone() {
+        show(loginForm, false);
+        show(registerForm, false);
+        show(forgotForm, false);
+        show(registerDone, false);
+        show(resendForm, false);
+        show(tabsEl, false);
+        show(confirmedDone, true);
     }
 
     function showResendConfirm(prefillEmail) {
@@ -437,6 +456,7 @@ const initialMsg = url.searchParams.get("msg") ?? "";
         show(registerForm, false);
         show(forgotForm, false);
         show(registerDone, false);
+        show(confirmedDone, false);
         show(tabsEl, false);
         show(resendForm, true);
         setError($("resend-confirm-error"), "");
@@ -472,11 +492,15 @@ const initialMsg = url.searchParams.get("msg") ?? "";
     // pass its own `msg`/`toast` for hard errors; these toasts only fire when
     // the user lands here *without* an explicit message, so they always get
     // some context for the unfamiliar form they're staring at.
-    if (initialMode === "resend-confirmation") {
+    if (initialMode === "confirmed") {
+        showConfirmedDone();
+    } else if (initialMode === "resend-confirmation") {
         showResendConfirm("");
     } else if (initialMode === "recovery-expired") {
         $("show-forgot-btn")?.click();
     }
+
+    $("confirmed-go-login")?.addEventListener("click", () => activateTab("login"));
 
     async function sendResendConfirmation(email, btn, errEl, successEl) {
         setError(errEl, "");

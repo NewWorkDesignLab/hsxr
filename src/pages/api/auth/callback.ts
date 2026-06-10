@@ -25,13 +25,17 @@ export const GET: APIRoute = async ({ request }) => {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (error) {
-        const mode = flow === 'recovery' ? 'recovery-expired' : 'resend-confirmation';
-        const msg =
-            flow === 'recovery'
-                ? 'Reset link expired. Request a new one below.'
-                : 'Link expired or invalid. Request a new confirmation email below.';
+        if (flow === 'recovery') {
+            return buildRedirect(
+                `/account?mode=recovery-expired&toast=error&msg=${encodeURIComponent(
+                    'Reset link expired. Request a new one below.',
+                )}`,
+            );
+        }
         return buildRedirect(
-            `/account?mode=${mode}&toast=error&msg=${encodeURIComponent(msg)}`,
+            `/account?mode=confirmed&toast=success&msg=${encodeURIComponent(
+                'Email confirmed! You can now log in.',
+            )}`,
         );
     }
 
@@ -46,7 +50,7 @@ export const GET: APIRoute = async ({ request }) => {
 
     await supabase.auth.signOut({ scope: 'global' }).catch(() => undefined);
     return buildRedirect(
-        `/account?toast=success&msg=${encodeURIComponent(
+        `/account?mode=confirmed&toast=success&msg=${encodeURIComponent(
             'Email confirmed! You can now log in.',
         )}`,
     );

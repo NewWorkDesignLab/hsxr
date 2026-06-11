@@ -14,9 +14,7 @@ export const GET: APIRoute = async ({ request }) => {
 
     if (!code) {
         return buildRedirect(
-            `/account?mode=resend-confirmation&toast=error&msg=${encodeURIComponent(
-                'Invalid link. Request a new confirmation email below.',
-            )}`,
+            `/account?mode=link-invalid`,
         );
     }
 

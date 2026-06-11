@@ -139,6 +139,20 @@ const initialMsg = url.searchParams.get("msg") ?? "";
                     <button type="button" class="account-btn-link" id="resend-back-to-login">← Back to login</button>
                 </form>
 
+                <div id="link-invalid-done" class="account-register-done hidden">
+                    <div class="account-error" style="display:block">
+                        ⚠️ This link is invalid or has already been used.
+                    </div>
+                    <p class="account-help">
+                        If you already confirmed your email, you can log in directly.
+                        Otherwise, you can request a new confirmation email.
+                    </p>
+                    <div class="account-register-done-actions">
+                        <button type="button" class="account-btn-primary" id="link-invalid-go-login">Go to Login</button>
+                        <button type="button" class="account-btn-secondary" id="link-invalid-go-resend">Resend confirmation email</button>
+                    </div>
+                </div>
+
                 <div id="confirmed-done" class="account-register-done hidden">
                     <div class="account-success">
                         ✅ Email successfully confirmed! You can now log in.
@@ -282,7 +296,6 @@ const initialMsg = url.searchParams.get("msg") ?? "";
             const data = await res.json().catch(() => ({}));
             return { res, data };
         } catch (err) {
-            // Network failure / offline / aborted — surface a uniform error shape.
             return {
                 res: null,
                 data: { error: "Network error. Please check your connection and try again." },
@@ -435,8 +448,8 @@ const initialMsg = url.searchParams.get("msg") ?? "";
         show(registerDone, false);
         show(resendForm, false);
         show(confirmedDone, false);
+        show($("link-invalid-done"), false);
         show(tabsEl, true);
-        // Reset transient login state
         setError($("login-error"), "");
         show($("login-resend-btn"), false);
     }
@@ -448,7 +461,19 @@ const initialMsg = url.searchParams.get("msg") ?? "";
         show(registerDone, false);
         show(resendForm, false);
         show(tabsEl, false);
+        show($("link-invalid-done"), false);
         show(confirmedDone, true);
+    }
+
+    function showLinkInvalid() {
+        show(loginForm, false);
+        show(registerForm, false);
+        show(forgotForm, false);
+        show(registerDone, false);
+        show(resendForm, false);
+        show(confirmedDone, false);
+        show(tabsEl, false);
+        show($("link-invalid-done"), true);
     }
 
     function showResendConfirm(prefillEmail) {
@@ -457,6 +482,7 @@ const initialMsg = url.searchParams.get("msg") ?? "";
         show(forgotForm, false);
         show(registerDone, false);
         show(confirmedDone, false);
+        show($("link-invalid-done"), false);
         show(tabsEl, false);
         show(resendForm, true);
         setError($("resend-confirm-error"), "");
@@ -494,6 +520,8 @@ const initialMsg = url.searchParams.get("msg") ?? "";
     // some context for the unfamiliar form they're staring at.
     if (initialMode === "confirmed") {
         showConfirmedDone();
+    } else if (initialMode === "link-invalid") {
+        showLinkInvalid();
     } else if (initialMode === "resend-confirmation") {
         showResendConfirm("");
     } else if (initialMode === "recovery-expired") {
@@ -501,6 +529,8 @@ const initialMsg = url.searchParams.get("msg") ?? "";
     }
 
     $("confirmed-go-login")?.addEventListener("click", () => activateTab("login"));
+    $("link-invalid-go-login")?.addEventListener("click", () => activateTab("login"));
+    $("link-invalid-go-resend")?.addEventListener("click", () => showResendConfirm(""));
 
     async function sendResendConfirmation(email, btn, errEl, successEl) {
         setError(errEl, "");

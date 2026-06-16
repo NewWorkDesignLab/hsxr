@@ -823,21 +823,21 @@ h1 {
 }
 
 .session-qr-canvas {
-    width: 500px;
-    height: 500px;
-    max-width: calc(100vw - 4rem);
-    max-height: calc(100vh - 8rem);
+    width: min(500px, calc(100vw - 4rem), calc(100vh - 10rem));
+    height: min(500px, calc(100vw - 4rem), calc(100vh - 10rem));
+    aspect-ratio: 1;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
 }
 
 .session-qr-canvas img,
 .session-qr-canvas canvas {
     width: 100% !important;
     height: 100% !important;
-    max-width: 500px;
-    max-height: 500px;
+    object-fit: contain;
+    aspect-ratio: 1;
 }
 
 .session-qr-payload {

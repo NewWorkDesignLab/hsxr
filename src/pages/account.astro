@@ -63,7 +63,6 @@ const initialMsg = url.searchParams.get("msg") ?? "";
                 </div>
             </section>
 
-            <!-- Change Password Modal -->
             <div class="account-modal-overlay hidden" id="change-pw-modal" role="dialog" aria-modal="true" aria-labelledby="change-pw-title">
                 <div class="account-modal">
                     <h2 id="change-pw-title" class="account-modal-title">Change Password</h2>
@@ -89,7 +88,6 @@ const initialMsg = url.searchParams.get("msg") ?? "";
                 </div>
             </div>
 
-            <!-- Change Display Name Modal -->
             <div class="account-modal-overlay hidden" id="change-name-modal" role="dialog" aria-modal="true" aria-labelledby="change-name-title">
                 <div class="account-modal">
                     <h2 id="change-name-title" class="account-modal-title">Change Display Name</h2>
@@ -502,7 +500,6 @@ const initialMsg = url.searchParams.get("msg") ?? "";
         show(forgotForm, true);
         setError($("forgot-error"), "");
         setSuccess($("forgot-success"), false);
-        // Prefill forgot email from login email if available
         const loginEmail = $("login-email")?.value;
         const forgotEmail = $("forgot-email");
         if (loginEmail && forgotEmail && !forgotEmail.value) {
@@ -514,10 +511,6 @@ const initialMsg = url.searchParams.get("msg") ?? "";
     $("resend-back-to-login")?.addEventListener("click", () => activateTab("login"));
     wirePwMatch("reg-password", "reg-password-confirm");
 
-    // Handle deep-link modes from the email callback. We let the callback
-    // pass its own `msg`/`toast` for hard errors; these toasts only fire when
-    // the user lands here *without* an explicit message, so they always get
-    // some context for the unfamiliar form they're staring at.
     if (initialMode === "confirmed") {
         showConfirmedDone();
     } else if (initialMode === "link-invalid") {
@@ -571,7 +564,6 @@ const initialMsg = url.searchParams.get("msg") ?? "";
             notifyError(errEl, "Enter your email above first.");
             return;
         }
-        // Reuse the login error area for status; on success, hide the resend button.
         setError(errEl, "");
         disable(btn, true);
         const { res, data } = await postJson("/api/auth/resend-confirmation", { email });

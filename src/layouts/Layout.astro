@@ -2,6 +2,13 @@
 import "../styles/global.css";
 import { getOptionalUser } from "../lib/auth-helpers";
 
+interface Props {
+    hideHeaderActions?: boolean;
+    hideHomeLink?: boolean;
+}
+
+const { hideHeaderActions = false, hideHomeLink = false } = Astro.props;
+
 const currentUser = await getOptionalUser(
     Astro.cookies,
     Astro.request.headers.get("Cookie") ?? "",
@@ -25,7 +32,7 @@ const isHomePage = Astro.url.pathname === "/";
     <title>HoloSpace-XR</title>
 </head>
 <body>
-    {!isHomePage && (
+    {!isHomePage && !hideHomeLink && (
         <a href="/" class="home-link" aria-label="Home" title="Home">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                 <path d="M3 9.5L12 3l9 6.5V20a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1V9.5z"/>
@@ -33,14 +40,14 @@ const isHomePage = Astro.url.pathname === "/";
         </a>
     )}
     <div class="header-actions">
-        {currentUser && !isFilemanagerPage && (
+        {!hideHeaderActions && currentUser && !isFilemanagerPage && (
             <a href="/filemanager" class="filemanager-icon" aria-label="File Manager" title="File Manager">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                     <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
                 </svg>
             </a>
         )}
-        {currentUser ? (
+        {!hideHeaderActions && currentUser ? (
             <a
                 href="/account"
                 class={`account-link${isAccountPage ? " account-link-active" : ""}`}
@@ -54,7 +61,7 @@ const isHomePage = Astro.url.pathname === "/";
                 <span class="account-link-name">{currentUser.display_name ?? "Account"}</span>
             </a>
         ) : (
-            !isAccountPage && (
+            !hideHeaderActions && !isAccountPage && (
                 <a href="/account" class="account-link account-link-login" aria-label="Login" title="Login">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
                         <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/>
@@ -69,12 +76,14 @@ const isHomePage = Astro.url.pathname === "/";
     <footer class="site-footer">
         <div class="footer-inner">
             <div class="footer-logos">
-                <img src="/logos/logo1.png" alt="Logo 1" class="footer-logo" />
-                <img src="/logos/logo2.png" alt="Logo 2" class="footer-logo" />
-                <img src="/logos/logo3.png" alt="Logo 3" class="footer-logo" />
+                <img src="/logos/logo1.png" alt="Logo 1" class="footer-logo footer-logo-sm" />
+                <img src="/logos/logo2.png" alt="Logo 2" class="footer-logo footer-logo-sm" />
+                <img src="/logos/logo3.png" alt="Logo 3" class="footer-logo footer-logo-sm" />
             </div>
             <span class="footer-divider">|</span>
             <a href="https://www.fh-dresden.eu/de/forschung/forschungsprojekte/validierungsprojekt-holospacexr/" target="_blank" rel="noopener noreferrer" class="footer-details-link">Project Details</a>
+            <span class="footer-divider footer-divider-secondary">|</span>
+            <a href="/privacy" class="footer-details-link">Privacy Policy</a>
         </div>
     </footer>
 </body>

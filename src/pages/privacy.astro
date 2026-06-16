@@ -1,0 +1,245 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+<Layout>
+    <main class="privacy-main">
+        <article class="privacy-card">
+            <h1 class="privacy-title">Privacy Policy</h1>
+            <p class="privacy-updated">Last updated: June 2026</p>
+
+            <section class="privacy-section">
+                <h2>1. Data Controller</h2>
+                <p>
+                    Fachhochschule Dresden – Private Fachhochschule gGmbH<br />
+                    Project: HoloSpace XR<br />
+                    Email: <a href="mailto:contact@holospacexr.com">contact@holospacexr.com</a>
+                </p>
+            </section>
+
+            <section class="privacy-section">
+                <h2>2. Collection and Storage of Personal Data</h2>
+                <p>
+                    When you visit our website, certain information is automatically collected
+                    by the hosting provider (server log files). This includes:
+                </p>
+                <ul>
+                    <li>IP address of the requesting device</li>
+                    <li>Date and time of access</li>
+                    <li>Name and URL of the requested file</li>
+                    <li>Browser and operating system used</li>
+                </ul>
+                <p>
+                    This data is used solely to ensure reliable operation of the website and
+                    is deleted after no more than 14 days.
+                </p>
+            </section>
+
+            <section class="privacy-section">
+                <h2>3. Contact Form</h2>
+                <p>
+                    When you use our contact form, we collect the following data:
+                </p>
+                <ul>
+                    <li>Name</li>
+                    <li>Email address</li>
+                    <li>Company (optional)</li>
+                </ul>
+                <p>
+                    <strong>Purpose:</strong> To process your inquiry and communicate with you
+                    during our testing phase.
+                </p>
+                <p>
+                    <strong>Legal basis:</strong> Your consent pursuant to Art. 6(1)(a) DSGVO
+                    (checkbox in the form).
+                </p>
+                <p>
+                    <strong>Retention period:</strong> Your data is stored until the purpose
+                    of the inquiry is fulfilled or you request deletion.
+                </p>
+                <p>
+                    After submitting the form, you will receive a confirmation email at the
+                    provided address.
+                </p>
+            </section>
+
+            <section class="privacy-section">
+                <h2>4. User Account</h2>
+                <p>
+                    When registering an account, we store your email address and your chosen
+                    display name. Authentication is handled via Supabase (see section on
+                    data processors).
+                </p>
+                <p>
+                    <strong>Legal basis:</strong> Performance of a contract pursuant to
+                    Art. 6(1)(b) DSGVO.
+                </p>
+            </section>
+
+            <section class="privacy-section">
+                <h2>5. Data Processors</h2>
+                <p>We use the following third-party services for data processing:</p>
+                <ul>
+                    <li>
+                        <strong>Supabase Inc.</strong> – Database and authentication
+                        (server location: EU)
+                    </li>
+                    <li>
+                        <strong>NWDL Mail Server</strong> (server.nwdl.org) – Sending
+                        confirmation and notification emails
+                    </li>
+                </ul>
+                <p>
+                    Data processing agreements pursuant to Art. 28 DSGVO are in place with
+                    all processors.
+                </p>
+            </section>
+
+            <section class="privacy-section">
+                <h2>6. Your Rights</h2>
+                <p>You have the right at any time to:</p>
+                <ul>
+                    <li>Access your stored data (Art. 15 DSGVO)</li>
+                    <li>Rectification of inaccurate data (Art. 16 DSGVO)</li>
+                    <li>Erasure of your data (Art. 17 DSGVO)</li>
+                    <li>Restriction of processing (Art. 18 DSGVO)</li>
+                    <li>Data portability (Art. 20 DSGVO)</li>
+                    <li>Withdraw your consent (Art. 7(3) DSGVO)</li>
+                </ul>
+                <p>
+                    To exercise your rights, please contact:
+                </p>
+                <p class="privacy-contact-box">
+                    📧 <a href="mailto:contact@holospacexr.com">contact@holospacexr.com</a>
+                </p>
+                <p>
+                    You also have the right to lodge a complaint with the competent
+                    supervisory authority.
+                </p>
+            </section>
+
+            <section class="privacy-section">
+                <h2>7. Data Deletion</h2>
+                <p>
+                    You may request the complete deletion of your personal data stored by us
+                    at any time. To do so, send an email to:
+                </p>
+                <p class="privacy-contact-box">
+                    📧 <a href="mailto:contact@holospacexr.com">contact@holospacexr.com</a>
+                </p>
+                <p>
+                    We will comply with your deletion request without undue delay and no
+                    later than 30 days, and will inform you once the deletion is complete.
+                </p>
+            </section>
+
+            <section class="privacy-section">
+                <h2>8. Cookies</h2>
+                <p>
+                    Our website uses only technically necessary cookies (e.g. session cookies
+                    for authentication). No tracking or marketing cookies are used.
+                </p>
+            </section>
+
+            <section class="privacy-section">
+                <h2>9. Changes</h2>
+                <p>
+                    We reserve the right to update this privacy policy to reflect changes in
+                    the law or our services. The current version is always available on this
+                    page.
+                </p>
+            </section>
+        </article>
+    </main>
+</Layout>
+
+<style>
+    .privacy-main {
+        width: 100%;
+        max-width: 720px;
+        margin: 4rem auto 2rem;
+        padding: 0 1rem 2rem;
+        box-sizing: border-box;
+    }
+
+    .privacy-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.03);
+        padding: 2rem;
+        box-sizing: border-box;
+    }
+
+    .privacy-title {
+        margin: 0 0 0.25rem;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #111827;
+        text-align: left;
+    }
+
+    .privacy-updated {
+        margin: 0 0 1.5rem;
+        color: #6b7280;
+        font-size: 0.8rem;
+    }
+
+    .privacy-section {
+        margin-bottom: 1.75rem;
+    }
+
+    .privacy-section:last-child {
+        margin-bottom: 0;
+    }
+
+    .privacy-section h2 {
+        font-size: 1.05rem;
+        font-weight: 600;
+        color: #1f2937;
+        margin: 0 0 0.5rem;
+    }
+
+    .privacy-section p {
+        margin: 0 0 0.6rem;
+        color: #374151;
+        font-size: 0.9rem;
+        line-height: 1.65;
+    }
+
+    .privacy-section ul {
+        margin: 0.4rem 0 0.8rem 1.25rem;
+        padding: 0;
+        color: #374151;
+        font-size: 0.9rem;
+        line-height: 1.7;
+    }
+
+    .privacy-section li {
+        margin-bottom: 0.25rem;
+    }
+
+    .privacy-section a {
+        color: #4a90d9;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+    }
+
+    .privacy-section a:hover {
+        color: #357abd;
+    }
+
+    .privacy-contact-box {
+        background: #f0f7ff;
+        border: 1px solid #bfdbfe;
+        border-radius: 8px;
+        padding: 0.6rem 1rem;
+        font-weight: 500;
+    }
+
+    @media (max-width: 480px) {
+        .privacy-card {
+            padding: 1.25rem;
+        }
+    }
+</style>
+

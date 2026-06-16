@@ -1,0 +1,266 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+<Layout hideHeaderActions={true} hideHomeLink={true}>
+    <main class="contact-main">
+        <section class="contact-card">
+            <h1 class="contact-title">Contact</h1>
+            <p class="contact-intro">
+                Thank you for your interest in <strong>HoloSpace XR</strong>!
+                We are currently in a testing phase and welcome any inquiries.
+                Simply fill out the form below and we'll get back to you shortly.
+            </p>
+
+            <form id="contact-form" class="contact-form" novalidate>
+                <label class="account-label">
+                    <span>Name *</span>
+                    <input class="account-input" type="text" name="name" required maxlength="200" autocomplete="name" />
+                </label>
+
+                <label class="account-label">
+                    <span>Email *</span>
+                    <input class="account-input" type="email" name="email" required maxlength="320" autocomplete="email" />
+                </label>
+
+                <label class="account-label">
+                    <span>Company</span>
+                    <input class="account-input" type="text" name="company" maxlength="200" autocomplete="organization" />
+                </label>
+
+                <div class="contact-hp" aria-hidden="true">
+                    <label>
+                        Website
+                        <input type="text" name="website" tabindex="-1" autocomplete="off" />
+                    </label>
+                </div>
+
+                <label class="contact-consent">
+                    <input type="checkbox" name="consent" required />
+                    <span>
+                        I consent to my data being stored for the purpose of this inquiry.
+                        See our <a href="/privacy" target="_blank">Privacy Policy</a>.
+                    </span>
+                </label>
+
+                <div class="account-error hidden" id="contact-error"></div>
+
+                <button type="submit" class="account-btn-primary" id="contact-submit">Submit</button>
+            </form>
+
+            <div id="contact-done" class="contact-done hidden">
+                <h2 class="contact-done-title">Thank you!</h2>
+                <p class="contact-done-text" id="contact-done-text">You will receive a confirmation email shortly.</p>
+                <button type="button" class="account-btn-link contact-done-back" id="contact-back">← Back to form</button>
+            </div>
+        </section>
+    </main>
+</Layout>
+
+<script>
+(() => {
+    const form = document.getElementById("contact-form") as HTMLFormElement;
+    const errorEl = document.getElementById("contact-error")!;
+    const submitBtn = document.getElementById("contact-submit") as HTMLButtonElement;
+    const doneEl = document.getElementById("contact-done")!;
+    const doneText = document.getElementById("contact-done-text")!;
+    const backBtn = document.getElementById("contact-back")!;
+
+    function setError(msg: string) {
+        if (msg) {
+            errorEl.textContent = msg;
+            errorEl.classList.remove("hidden");
+        } else {
+            errorEl.textContent = "";
+            errorEl.classList.add("hidden");
+        }
+    }
+
+    function showDone(msg: string) {
+        doneText.textContent = msg;
+        form.classList.add("hidden");
+        doneEl.classList.remove("hidden");
+    }
+
+    function showForm() {
+        doneEl.classList.add("hidden");
+        form.classList.remove("hidden");
+    }
+
+    function disable(busy: boolean) {
+        if (busy) {
+            submitBtn.disabled = true;
+            submitBtn.textContent = "Sending…";
+        } else {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Submit";
+        }
+    }
+
+    backBtn.addEventListener("click", () => {
+        showForm();
+    });
+
+    form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        setError("");
+
+        const fd = new FormData(form);
+        const consent = fd.get("consent");
+        if (!consent) {
+            setError("Please accept the privacy policy.");
+            return;
+        }
+
+        const name = (fd.get("name") as string || "").trim();
+        const email = (fd.get("email") as string || "").trim();
+        const company = (fd.get("company") as string || "").trim();
+        const website = (fd.get("website") as string || "").toString();
+
+        if (!name) {
+            setError("Please enter your name.");
+            return;
+        }
+        if (!email) {
+            setError("Please enter your email address.");
+            return;
+        }
+
+        disable(true);
+
+        try {
+            const res = await fetch("/api/contact", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name, email, company, website }),
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                if (data.status === "already_exists") {
+                    showDone("You are already registered – we'll be in touch!");
+                } else {
+                    showDone("You will receive a confirmation email shortly.");
+                }
+                form.reset();
+            } else if (res.status === 422) {
+                setError("Please enter valid data.");
+            } else {
+                setError("An error occurred. Please try again later.");
+            }
+        } catch {
+            setError("Network error. Please try again later.");
+        } finally {
+            disable(false);
+        }
+    });
+})();
+</script>
+
+<style>
+    .contact-main {
+        width: 100%;
+        max-width: 520px;
+        margin: 4rem auto 2rem;
+        padding: 0 1rem 2rem;
+        box-sizing: border-box;
+    }
+
+    .contact-card {
+        background: #ffffff;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 1px 2px rgba(0, 0, 0, 0.03);
+        padding: 2rem;
+        box-sizing: border-box;
+    }
+
+    .contact-title {
+        margin: 0 0 0.75rem;
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: #111827;
+        text-align: left;
+    }
+
+    .contact-intro {
+        margin: 0 0 1.5rem;
+        color: #4b5563;
+        font-size: 0.9rem;
+        line-height: 1.6;
+    }
+
+    .contact-form {
+        display: flex;
+        flex-direction: column;
+        gap: 0.85rem;
+    }
+
+    .contact-hp {
+        position: absolute;
+        left: -5000px;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+    }
+
+    .contact-consent {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+        font-size: 0.82rem;
+        color: #4b5563;
+        line-height: 1.5;
+        cursor: pointer;
+    }
+
+    .contact-consent input[type="checkbox"] {
+        margin-top: 0.2rem;
+        flex-shrink: 0;
+        width: 16px;
+        height: 16px;
+        accent-color: #4a90d9;
+    }
+
+    .contact-consent a {
+        color: #4a90d9;
+        text-decoration: underline;
+        text-underline-offset: 2px;
+    }
+
+    .contact-consent a:hover {
+        color: #357abd;
+    }
+
+    .contact-done {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.75rem;
+        text-align: center;
+        padding: 1rem 0;
+    }
+
+    .contact-done.hidden {
+        display: none;
+    }
+
+    .contact-done-title {
+        margin: 0;
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #111827;
+    }
+
+    .contact-done-text {
+        margin: 0;
+        color: #4b5563;
+        font-size: 0.9rem;
+        line-height: 1.6;
+    }
+
+    .contact-done-back {
+        margin-top: 0.5rem;
+        align-self: center;
+    }
+</style>
+

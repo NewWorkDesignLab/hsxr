@@ -11,7 +11,7 @@ export async function getOptionalUser(
     cookies: AstroCookies,
     cookieHeader: string,
 ): Promise<CurrentUser | null> {
-    const supabase = createSupabaseServerClient(cookies, cookieHeader);
+    const supabase = createSupabaseServerClient(cookies, cookieHeader, { readOnly: true });
     const {
         data: { user },
     } = await supabase.auth.getUser();

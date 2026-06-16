@@ -12,13 +12,29 @@ export const onRequest = defineMiddleware(async (context, next) => {
                     parseCookieHeader(context.request.headers.get('Cookie') ?? '')
                         .filter((c): c is { name: string; value: string } => c.value !== undefined),
                 setAll: (cookiesToSet) =>
-                    cookiesToSet.forEach(({ name, value, options }) =>
-                        context.cookies.set(name, value, options),
-                    ),
+                    cookiesToSet.forEach(({ name, value, options }) => {
+                        try {
+                            context.cookies.set(name, value, options);
+                        } catch {
+                        }
+                    }),
             },
         });
 
-        await supabase.auth.getUser();
+        try {
+            await supabase.auth.getUser();
+        } catch {
+            const cookieHeader = context.request.headers.get('Cookie') ?? '';
+            const parsed = parseCookieHeader(cookieHeader);
+            for (const cookie of parsed) {
+                if (cookie.name?.includes('auth-token')) {
+                    try {
+                        context.cookies.delete(cookie.name, { path: '/' });
+                    } catch {
+                    }
+                }
+            }
+        }
     }
 
     return next();

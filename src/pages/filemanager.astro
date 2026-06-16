@@ -284,8 +284,6 @@ async function uploadFile(file: File): Promise<void> {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-    // The app-screen only exists when the user is logged in. If the page is
-    // showing the "auth required" view, there's nothing for us to wire up.
     if (!document.getElementById("app-screen")) return;
 
     loadModels();

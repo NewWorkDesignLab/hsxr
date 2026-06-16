@@ -18,18 +18,22 @@ function getEnv() {
 export function createSupabaseServerClient(
     cookies: AstroCookies,
     requestCookieHeader = '',
+    options?: { readOnly?: boolean },
 ) {
     const { url, anonKey } = getEnv();
+    const readOnly = options?.readOnly ?? false;
     return createServerClient(url, anonKey, {
         cookies: {
             getAll: () => parseCookies(requestCookieHeader),
-            setAll: (cookiesToSet) =>
-                cookiesToSet.forEach(({ name, value, options }) => {
-                    try {
-                        cookies.set(name, value, options);
-                    } catch {
-                    }
-                }),
+            setAll: readOnly
+                ? () => {}
+                : (cookiesToSet) =>
+                    cookiesToSet.forEach(({ name, value, options: opts }) => {
+                        try {
+                            cookies.set(name, value, opts);
+                        } catch {
+                        }
+                    }),
         },
     });
 }

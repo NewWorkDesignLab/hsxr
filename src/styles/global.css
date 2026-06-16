@@ -1,12 +1,14 @@
 html, body {
     margin: 0;
     padding: 0;
+    overflow-x: hidden;
 }
 
 body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
+    min-height: 100dvh;
 }
 
 .site-footer {
@@ -14,6 +16,7 @@ body {
     padding: 1rem 0;
     background: #ffffff;
     border-top: 1px solid #e5e7eb;
+    flex-shrink: 0;
 }
 
 .footer-inner {
@@ -145,11 +148,31 @@ h1 {
     }
 
     body {
-        padding: 0.5rem;
+        padding: 0;
     }
 
     .main-content {
-        padding: 0 0.5rem;
+        padding: 0.5rem;
+    }
+
+    h1 {
+        font-size: 1.4rem;
+        margin: 0.75rem 0;
+    }
+
+    .footer-inner {
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.4rem;
+        padding: 0 0.75rem;
+    }
+
+    .footer-divider {
+        margin-left: 0;
+    }
+
+    .footer-details-link {
+        font-size: 0.78rem;
     }
 }
 
@@ -864,15 +887,16 @@ h1 {
 @media (max-width: 768px) {
 
     .main-content {
-        min-height: 100vh;
-        padding: 1rem 0.5rem 2rem;
+        flex: 1;
+        min-height: 0;
+        padding: 1rem 0.5rem;
         margin: 0 auto;
     }
 
     .main-content.wide-content {
         justify-content: flex-start;
         min-height: auto;
-        padding-top: 2rem;
+        padding-top: 1.5rem;
     }
 
     .dual-container {
@@ -882,6 +906,19 @@ h1 {
     .panel {
         min-width: unset;
         width: 100%;
+    }
+
+    .footer-inner {
+        padding: 0 1rem;
+        gap: 0.5rem;
+    }
+
+    .footer-logo {
+        height: 28px;
+    }
+
+    .footer-logo-sm {
+        height: 24px;
     }
 }
 
@@ -1440,6 +1477,28 @@ h1 {
         padding: 0;
         width: 32px;
         justify-content: center;
+    }
+    .account-main {
+        margin-top: 3rem;
+        padding: 0 0.75rem 1.5rem;
+    }
+    .account-card {
+        padding: 1.25rem;
+    }
+    .sessions-card {
+        padding: 0.75rem;
+        margin-top: 1rem;
+    }
+    .session-item {
+        padding: 0.6rem;
+        flex-wrap: wrap;
+    }
+    .session-title {
+        font-size: 0.9rem;
+    }
+    .session-players {
+        font-size: 1.1rem;
+        min-width: 2.5rem;
     }
 }
 

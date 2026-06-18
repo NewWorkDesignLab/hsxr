@@ -42,62 +42,64 @@ const i18nData = JSON.stringify({ en, de });
 </head>
 <body>
     {!hideHomeLink && (
-        <div class="home-bar">
-            <a href="/" class="home-link" aria-label={t(locale, 'nav_home')} title={t(locale, 'nav_home')} data-i18n-title="nav_home">
-                <img src="/logos/hsxr_logo.png" alt="HoloSpaceXR" class="home-logo" />
-            </a>
-            <button type="button" class="locale-btn" aria-label={flagAlt} title={flagAlt} data-locale={otherLocale}>
-                <img src={flagSrc} alt={flagAlt} class="locale-flag" />
-            </button>
-        </div>
-    )}
-    <div class="header-actions">
-        {!hideHeaderActions && currentUser && !isSessionsPage && (
-            <a href="/sessions" class="filemanager-icon" aria-label={t(locale, 'nav_sessions')} title={t(locale, 'nav_sessions')} data-i18n-title="nav_sessions">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <rect x="3" y="3" width="7" height="7"/>
-                    <rect x="14" y="3" width="7" height="7"/>
-                    <rect x="3" y="14" width="7" height="7"/>
-                    <line x1="14" y1="14" x2="14" y2="14.01"/>
-                    <line x1="20" y1="14" x2="20" y2="14.01"/>
-                    <line x1="14" y1="20" x2="14" y2="20.01"/>
-                    <line x1="20" y1="20" x2="20" y2="20.01"/>
-                    <line x1="17" y1="17" x2="17" y2="17.01"/>
-                </svg>
-            </a>
-        )}
-        {!hideHeaderActions && currentUser && !isFilemanagerPage && (
-            <a href="/filemanager" class="filemanager-icon" aria-label={t(locale, 'nav_filemanager')} title={t(locale, 'nav_filemanager')} data-i18n-title="nav_filemanager">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
-                </svg>
-            </a>
-        )}
-        {!hideHeaderActions && currentUser ? (
-            <a
-                href="/account"
-                class={`account-link${isAccountPage ? " account-link-active" : ""}`}
-                aria-label={t(locale, 'nav_account')}
-                title={currentUser.display_name ?? t(locale, 'nav_account')}
-                data-i18n-title="nav_account"
-            >
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                    <circle cx="12" cy="7" r="4"/>
-                </svg>
-                <span class="account-link-name">{currentUser.display_name ?? t(locale, 'nav_account')}</span>
-            </a>
-        ) : (
-            !hideHeaderActions && !isAccountPage && (
-                <a href="/account" class="account-link account-link-login" aria-label={t(locale, 'nav_login')} title={t(locale, 'nav_login')} data-i18n-title="nav_login">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                        <circle cx="12" cy="7" r="4"/>
-                    </svg>
+        <header class="site-header">
+            <div class="header-left">
+                <a href="/" class="home-link" aria-label={t(locale, 'nav_home')} title={t(locale, 'nav_home')} data-i18n-title="nav_home">
+                    <img src="/logos/hsxr_logo.png" alt="HoloSpaceXR" class="home-logo" />
                 </a>
-            )
-        )}
-    </div>
+                <button type="button" class="locale-btn" aria-label={flagAlt} title={flagAlt} data-locale={otherLocale}>
+                    <img src={flagSrc} alt={flagAlt} class="locale-flag" />
+                </button>
+            </div>
+            <div class="header-right">
+                {!hideHeaderActions && currentUser && !isSessionsPage && (
+                    <a href="/sessions" class="filemanager-icon" aria-label={t(locale, 'nav_sessions')} title={t(locale, 'nav_sessions')} data-i18n-title="nav_sessions">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <rect x="3" y="3" width="7" height="7"/>
+                            <rect x="14" y="3" width="7" height="7"/>
+                            <rect x="3" y="14" width="7" height="7"/>
+                            <line x1="14" y1="14" x2="14" y2="14.01"/>
+                            <line x1="20" y1="14" x2="20" y2="14.01"/>
+                            <line x1="14" y1="20" x2="14" y2="20.01"/>
+                            <line x1="20" y1="20" x2="20" y2="20.01"/>
+                            <line x1="17" y1="17" x2="17" y2="17.01"/>
+                        </svg>
+                    </a>
+                )}
+                {!hideHeaderActions && currentUser && currentUser.role === 'team' && !isFilemanagerPage && (
+                    <a href="/filemanager" class="filemanager-icon" aria-label={t(locale, 'nav_filemanager')} title={t(locale, 'nav_filemanager')} data-i18n-title="nav_filemanager">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                        </svg>
+                    </a>
+                )}
+                {!hideHeaderActions && currentUser ? (
+                    <a
+                        href="/account"
+                        class={`account-link${isAccountPage ? " account-link-active" : ""}`}
+                        aria-label={t(locale, 'nav_account')}
+                        title={currentUser.display_name ?? t(locale, 'nav_account')}
+                        data-i18n-title="nav_account"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                        <span class="account-link-name">{currentUser.display_name ?? t(locale, 'nav_account')}</span>
+                    </a>
+                ) : (
+                    !hideHeaderActions && !isAccountPage && (
+                        <a href="/account" class="account-link account-link-login" aria-label={t(locale, 'nav_login')} title={t(locale, 'nav_login')} data-i18n-title="nav_login">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                                <circle cx="12" cy="7" r="4"/>
+                            </svg>
+                        </a>
+                    )
+                )}
+            </div>
+        </header>
+    )}
     <slot />
     <footer class="site-footer">
         <div class="footer-inner">
@@ -106,10 +108,12 @@ const i18nData = JSON.stringify({ en, de });
                 <a href="https://www.fh-dresden.eu/de/forschung/forschungsprojekte/validierungsprojekt-holospacexr/" target="_blank" rel="noopener noreferrer"><img src="/logos/logo2.png" alt="Fachhochschule Dresden" class="footer-logo footer-logo-sm" /></a>
                 <a href="https://newworkdesignlab.org" target="_blank" rel="noopener noreferrer"><img src="/logos/logo3.png" alt="NewWorkDesignLab" class="footer-logo footer-logo-sm" style="transform: translateY(2px);" /></a>
             </div>
-            <span class="footer-divider">|</span>
-            <a href="/privacy" class="footer-details-link" data-i18n="privacy_policy">{t(locale, 'privacy_policy')}</a>
-            <span class="footer-divider">|</span>
-            <a href="https://www.fh-dresden.eu/de/impressum/" target="_blank" rel="noopener noreferrer" class="footer-details-link" data-i18n="legal_note">{t(locale, 'legal_note')}</a>
+            <span class="footer-divider footer-divider-main">|</span>
+            <div class="footer-links">
+                <a href="/privacy" class="footer-details-link" data-i18n="privacy_policy">{t(locale, 'privacy_policy')}</a>
+                <span class="footer-divider footer-divider-links">|</span>
+                <a href="https://www.fh-dresden.eu/de/impressum/" target="_blank" rel="noopener noreferrer" class="footer-details-link" data-i18n="legal_note">{t(locale, 'legal_note')}</a>
+            </div>
         </div>
     </footer>
     <script is:inline define:vars={{ i18nData, locale }}>

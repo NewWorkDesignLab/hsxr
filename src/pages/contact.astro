@@ -181,11 +181,17 @@ const locale = getLocale(Astro.cookies, Astro.request.headers.get('Accept-Langua
 <style>
     .contact-main {
         width: 100%;
-        max-width: 860px;
-        margin: 4rem auto 2rem;
+        max-width: 600px;
+        margin: 0.75rem auto 2rem;
         padding: 0 1rem 2rem;
         box-sizing: border-box;
         flex: 1;
+    }
+
+    @media (min-width: 769px) {
+        .contact-main {
+            margin-top: 5rem;
+        }
     }
 
     .contact-card {

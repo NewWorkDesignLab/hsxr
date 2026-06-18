@@ -1,10 +1,12 @@
 import type { AstroCookies } from 'astro';
 import { createSupabaseServerClient } from './supabase-server';
+import { getApiUrl } from './endpoint-config';
 
 export interface CurrentUser {
     id: string;
     email: string | null;
     display_name: string | null;
+    role: string | null;
 }
 
 export async function getOptionalUser(
@@ -23,6 +25,21 @@ export async function getOptionalUser(
         .eq('id', user.id)
         .single();
 
+    let role: string | null = null;
+    try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.access_token) {
+            const apiUrl = getApiUrl();
+            const res = await fetch(`${apiUrl}/profiles/me`, {
+                headers: { Authorization: `Bearer ${session.access_token}` },
+            });
+            if (res.ok) {
+                const apiProfile = await res.json();
+                role = apiProfile.role ?? null;
+            }
+        }
+    } catch {}
+
     return {
         id: user.id,
         email: user.email ?? null,
@@ -31,5 +48,6 @@ export async function getOptionalUser(
             (user.user_metadata?.display_name as string | undefined) ??
             user.email ??
             null,
+        role,
     };
 }

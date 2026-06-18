@@ -82,10 +82,16 @@ const locale = getLocale(Astro.cookies, Astro.request.headers.get('Accept-Langua
     .privacy-main {
         width: 100%;
         max-width: 900px;
-        margin: 4rem auto 2rem;
+        margin: 0.75rem auto 2rem;
         padding: 0 1rem 2rem;
         box-sizing: border-box;
         flex: 1;
+    }
+
+    @media (min-width: 769px) {
+        .privacy-main {
+            margin-top: 5rem;
+        }
     }
 
     .privacy-card {

@@ -1,6 +1,9 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { createSupabaseServerClient } from "../lib/supabase-server";
+import { getLocale, t } from "../i18n";
+
+const locale = getLocale(Astro.cookies, Astro.request.headers.get('Accept-Language'));
 
 const supabase = createSupabaseServerClient(
     Astro.cookies,
@@ -34,55 +37,52 @@ const initialMsg = url.searchParams.get("msg") ?? "";
 
         {user ? (
             <section class="account-card">
-                <h1 class="account-title">Account</h1>
+                <h1 class="account-title" data-i18n="account_title">{t(locale, 'account_title')}</h1>
 
                 <div class="account-row">
-                    <span class="account-row-label">Display Name</span>
+                    <span class="account-row-label" data-i18n="account_display_name">{t(locale, 'account_display_name')}</span>
                     <span class="account-row-value" id="display-name-value">{displayName ?? "—"}</span>
                     <button
                         type="button"
                         class="account-icon-btn"
                         id="open-change-name-btn"
-                        aria-label="Edit display name"
-                        title="Edit display name"
+                        aria-label={t(locale, 'account_edit_name')}
+                        title={t(locale, 'account_edit_name')}
+                        data-i18n-title="account_edit_name"
                     >✏️</button>
                 </div>
 
                 <div class="account-row">
-                    <span class="account-row-label">Email</span>
+                    <span class="account-row-label" data-i18n="account_email">{t(locale, 'account_email')}</span>
                     <span class="account-row-value">{user.email}</span>
                 </div>
 
                 <div class="account-actions">
-                    <button type="button" class="account-btn-secondary" id="open-change-pw-btn">
-                        Change Password
-                    </button>
-                    <button type="button" class="account-btn-danger" id="logout-btn">
-                        Logout
-                    </button>
+                    <button type="button" class="account-btn-secondary" id="open-change-pw-btn" data-i18n="account_change_password">{t(locale, 'account_change_password')}</button>
+                    <button type="button" class="account-btn-danger" id="logout-btn" data-i18n="account_logout">{t(locale, 'account_logout')}</button>
                 </div>
             </section>
 
             <div class="account-modal-overlay hidden" id="change-pw-modal" role="dialog" aria-modal="true" aria-labelledby="change-pw-title">
                 <div class="account-modal">
-                    <h2 id="change-pw-title" class="account-modal-title">Change Password</h2>
+                    <h2 id="change-pw-title" class="account-modal-title" data-i18n="account_change_password">{t(locale, 'account_change_password')}</h2>
                     <form id="change-pw-form" class="account-form" novalidate>
                         <label class="account-label" id="change-pw-current-label">
-                            <span>Current password</span>
+                            <span data-i18n="account_current_password">{t(locale, 'account_current_password')}</span>
                             <input class="account-input" type="password" id="change-pw-current" autocomplete="current-password" />
                         </label>
                         <label class="account-label">
-                            <span>New password</span>
+                            <span data-i18n="account_new_password">{t(locale, 'account_new_password')}</span>
                             <input class="account-input" type="password" id="change-pw-new" minlength="8" autocomplete="new-password" required />
                         </label>
                         <label class="account-label">
-                            <span>Confirm new password</span>
+                            <span data-i18n="account_confirm_password">{t(locale, 'account_confirm_password')}</span>
                             <input class="account-input" type="password" id="change-pw-confirm" minlength="8" autocomplete="new-password" required />
                         </label>
                         <div class="account-error hidden" id="change-pw-error"></div>
                         <div class="account-modal-actions">
-                            <button type="button" class="account-btn-secondary" data-modal-close="change-pw-modal">Cancel</button>
-                            <button type="submit" class="account-btn-primary">Save</button>
+                            <button type="button" class="account-btn-secondary" data-modal-close="change-pw-modal" data-i18n="account_cancel">{t(locale, 'account_cancel')}</button>
+                            <button type="submit" class="account-btn-primary" data-i18n="account_save">{t(locale, 'account_save')}</button>
                         </div>
                     </form>
                 </div>
@@ -90,10 +90,10 @@ const initialMsg = url.searchParams.get("msg") ?? "";
 
             <div class="account-modal-overlay hidden" id="change-name-modal" role="dialog" aria-modal="true" aria-labelledby="change-name-title">
                 <div class="account-modal">
-                    <h2 id="change-name-title" class="account-modal-title">Change Display Name</h2>
+                    <h2 id="change-name-title" class="account-modal-title" data-i18n="account_change_name">{t(locale, 'account_change_name')}</h2>
                     <form id="change-name-form" class="account-form" novalidate>
                         <label class="account-label">
-                            <span>Display name</span>
+                            <span data-i18n="account_display_name">{t(locale, 'account_display_name')}</span>
                             <input
                                 class="account-input"
                                 type="text"
@@ -106,65 +106,54 @@ const initialMsg = url.searchParams.get("msg") ?? "";
                         </label>
                         <div class="account-error hidden" id="change-name-error"></div>
                         <div class="account-modal-actions">
-                            <button type="button" class="account-btn-secondary" data-modal-close="change-name-modal">Cancel</button>
-                            <button type="submit" class="account-btn-primary">Save</button>
+                            <button type="button" class="account-btn-secondary" data-modal-close="change-name-modal" data-i18n="account_cancel">{t(locale, 'account_cancel')}</button>
+                            <button type="submit" class="account-btn-primary" data-i18n="account_save">{t(locale, 'account_save')}</button>
                         </div>
                     </form>
                 </div>
             </div>
         ) : (
             <section class="account-card">
-                <h1 class="account-title">Account</h1>
+                <h1 class="account-title" data-i18n="account_title">{t(locale, 'account_title')}</h1>
 
                 <div class="account-tabs" role="tablist">
-                    <button type="button" class="account-tab active" id="tab-login" role="tab" aria-selected="true">Login</button>
-                    <button type="button" class="account-tab" id="tab-register" role="tab" aria-selected="false">Register</button>
+                    <button type="button" class="account-tab active" id="tab-login" role="tab" aria-selected="true" data-i18n="account_login">{t(locale, 'account_login')}</button>
+                    <button type="button" class="account-tab" id="tab-register" role="tab" aria-selected="false" data-i18n="account_register">{t(locale, 'account_register')}</button>
                 </div>
 
                 <form id="resend-confirm-form" class="account-form hidden" novalidate>
-                    <p class="account-help">
-                        Need a new confirmation email? Enter your address and we'll send a fresh link.
-                    </p>
+                    <p class="account-help" data-i18n="account_resend_help">{t(locale, 'account_resend_help')}</p>
                     <label class="account-label">
-                        <span>Email</span>
+                        <span data-i18n="account_email">{t(locale, 'account_email')}</span>
                         <input class="account-input" type="email" id="resend-confirm-email" autocomplete="email" required />
                     </label>
                     <div class="account-error hidden" id="resend-confirm-error"></div>
-                    <div class="account-success hidden" id="resend-confirm-success">
-                        If the address is registered and not yet confirmed, a new email is on its way.
-                    </div>
-                    <button type="submit" class="account-btn-primary" id="resend-confirm-submit">Send confirmation email</button>
-                    <button type="button" class="account-btn-link" id="resend-back-to-login">← Back to login</button>
+                    <div class="account-success hidden" id="resend-confirm-success" data-i18n="account_resend_success">{t(locale, 'account_resend_success')}</div>
+                    <button type="submit" class="account-btn-primary" id="resend-confirm-submit" data-i18n="account_send_confirmation">{t(locale, 'account_send_confirmation')}</button>
+                    <button type="button" class="account-btn-link" id="resend-back-to-login" data-i18n="account_back_to_login">{t(locale, 'account_back_to_login')}</button>
                 </form>
 
                 <div id="link-invalid-done" class="account-register-done hidden">
-                    <div class="account-error" style="display:block">
-                        ⚠️ This link is invalid or has already been used.
-                    </div>
-                    <p class="account-help">
-                        If you already confirmed your email, you can log in directly.
-                        Otherwise, you can request a new confirmation email.
-                    </p>
+                    <div class="account-error" style="display:block" data-i18n="account_link_invalid" data-i18n-html>{t(locale, 'account_link_invalid')}</div>
+                    <p class="account-help" data-i18n="account_link_invalid_help">{t(locale, 'account_link_invalid_help')}</p>
                     <div class="account-register-done-actions">
-                        <button type="button" class="account-btn-primary" id="link-invalid-go-login">Go to Login</button>
-                        <button type="button" class="account-btn-secondary" id="link-invalid-go-resend">Resend confirmation email</button>
+                        <button type="button" class="account-btn-primary" id="link-invalid-go-login" data-i18n="account_go_login">{t(locale, 'account_go_login')}</button>
+                        <button type="button" class="account-btn-secondary" id="link-invalid-go-resend" data-i18n="account_resend_confirmation">{t(locale, 'account_resend_confirmation')}</button>
                     </div>
                 </div>
 
                 <div id="confirmed-done" class="account-register-done hidden">
-                    <div class="account-success">
-                        ✅ Email successfully confirmed! You can now log in.
-                    </div>
-                    <button type="button" class="account-btn-primary" id="confirmed-go-login">Go to Login</button>
+                    <div class="account-success" data-i18n="account_confirmed_success" data-i18n-html>{t(locale, 'account_confirmed_success')}</div>
+                    <button type="button" class="account-btn-primary" id="confirmed-go-login" data-i18n="account_go_login">{t(locale, 'account_go_login')}</button>
                 </div>
 
                 <form id="login-form" class="account-form" autocomplete="on" novalidate>
                     <label class="account-label">
-                        <span>Email</span>
+                        <span data-i18n="account_email">{t(locale, 'account_email')}</span>
                         <input class="account-input" type="email" id="login-email" autocomplete="email" required />
                     </label>
                     <label class="account-label">
-                        <span>Password</span>
+                        <span data-i18n="account_password">{t(locale, 'account_password')}</span>
                         <input class="account-input" type="password" id="login-password" autocomplete="current-password" required />
                     </label>
                     <div class="account-error hidden" id="login-error"></div>
@@ -172,57 +161,52 @@ const initialMsg = url.searchParams.get("msg") ?? "";
                         type="button"
                         class="account-btn-link hidden"
                         id="login-resend-btn"
-                    >Resend confirmation email</button>
-                    <button type="submit" class="account-btn-primary" id="login-submit">Login</button>
-                    <button type="button" class="account-btn-link" id="show-forgot-btn">Forgot password?</button>
+                        data-i18n="account_resend_confirmation"
+                    >{t(locale, 'account_resend_confirmation')}</button>
+                    <button type="submit" class="account-btn-primary" id="login-submit" data-i18n="account_login">{t(locale, 'account_login')}</button>
+                    <button type="button" class="account-btn-link" id="show-forgot-btn" data-i18n="account_forgot_password">{t(locale, 'account_forgot_password')}</button>
                 </form>
 
                 <form id="forgot-form" class="account-form hidden" novalidate>
-                    <p class="account-help">Enter your email and we'll send you a reset link.</p>
+                    <p class="account-help" data-i18n="account_forgot_help">{t(locale, 'account_forgot_help')}</p>
                     <label class="account-label">
-                        <span>Email</span>
+                        <span data-i18n="account_email">{t(locale, 'account_email')}</span>
                         <input class="account-input" type="email" id="forgot-email" autocomplete="email" required />
                     </label>
                     <div class="account-error hidden" id="forgot-error"></div>
-                    <div class="account-success hidden" id="forgot-success">Reset link sent. Check your inbox.</div>
-                    <button type="submit" class="account-btn-primary" id="forgot-submit">Send reset link</button>
-                    <button type="button" class="account-btn-link" id="back-to-login-btn">Back to login</button>
+                    <div class="account-success hidden" id="forgot-success" data-i18n="account_forgot_success">{t(locale, 'account_forgot_success')}</div>
+                    <button type="submit" class="account-btn-primary" id="forgot-submit" data-i18n="account_send_reset">{t(locale, 'account_send_reset')}</button>
+                    <button type="button" class="account-btn-link" id="back-to-login-btn" data-i18n="account_back_to_login">{t(locale, 'account_back_to_login')}</button>
                 </form>
 
                 <form id="register-form" class="account-form hidden" autocomplete="on" novalidate>
                     <label class="account-label">
-                        <span>Email</span>
+                        <span data-i18n="account_email">{t(locale, 'account_email')}</span>
                         <input class="account-input" type="email" id="reg-email" autocomplete="email" required />
                     </label>
                     <label class="account-label">
-                        <span>Display name</span>
+                        <span data-i18n="account_display_name">{t(locale, 'account_display_name')}</span>
                         <input class="account-input" type="text" id="reg-display-name" minlength="3" maxlength="24" required />
                     </label>
                     <label class="account-label">
-                        <span>Password</span>
+                        <span data-i18n="account_password">{t(locale, 'account_password')}</span>
                         <input class="account-input" type="password" id="reg-password" minlength="8" autocomplete="new-password" required />
                     </label>
                     <label class="account-label">
-                        <span>Confirm password</span>
+                        <span data-i18n="account_confirm_password">{t(locale, 'account_confirm_password')}</span>
                         <input class="account-input" type="password" id="reg-password-confirm" minlength="8" autocomplete="new-password" required />
                     </label>
                     <div class="account-error hidden" id="register-error"></div>
-                    <button type="submit" class="account-btn-primary" id="register-submit">Create account</button>
+                    <button type="submit" class="account-btn-primary" id="register-submit" data-i18n="account_create_account">{t(locale, 'account_create_account')}</button>
                 </form>
                 <div id="register-done" class="account-register-done hidden">
-                    <div class="account-success">
-                        Account created! Check your inbox for the confirmation link, then come back to log in.
-                    </div>
-                    <p class="account-help" id="register-done-email-hint">
-                        Didn't receive it? Check your spam folder or request a new email.
-                    </p>
+                    <div class="account-success" data-i18n="account_register_success" data-i18n-html>{t(locale, 'account_register_success')}</div>
+                    <p class="account-help" id="register-done-email-hint" data-i18n="account_register_hint">{t(locale, 'account_register_hint')}</p>
                     <div class="account-error hidden" id="register-resend-error"></div>
-                    <div class="account-success hidden" id="register-resend-success">
-                        Confirmation email re-sent. Check your inbox.
-                    </div>
+                    <div class="account-success hidden" id="register-resend-success" data-i18n="account_resend_done">{t(locale, 'account_resend_done')}</div>
                     <div class="account-register-done-actions">
-                        <button type="button" class="account-btn-secondary" id="register-resend-btn">Resend confirmation email</button>
-                        <button type="button" class="account-btn-link" id="reg-back-to-login">← Back to login</button>
+                        <button type="button" class="account-btn-secondary" id="register-resend-btn" data-i18n="account_resend_confirmation">{t(locale, 'account_resend_confirmation')}</button>
+                        <button type="button" class="account-btn-link" id="reg-back-to-login" data-i18n="account_back_to_login">{t(locale, 'account_back_to_login')}</button>
                     </div>
                 </div>
             </section>

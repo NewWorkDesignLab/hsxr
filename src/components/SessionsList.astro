@@ -41,10 +41,17 @@
     let currentSnapshot = "";
     let inFlight = false;
 
-    function formatDate(iso) {
+    function i18n(key: string): string {
+        const locale = (window as any).__locale || 'en';
+        const dict = (window as any).__i18n?.[locale];
+        return dict?.[key] ?? key;
+    }
+
+    function formatDate(iso: string) {
         const d = new Date(iso);
         if (isNaN(d.getTime())) return iso;
-        return d.toLocaleString("de-DE", {
+        const locale = (window as any).__locale || 'en';
+        return d.toLocaleString(locale === 'de' ? "de-DE" : "en-GB", {
             year: "numeric",
             month: "2-digit",
             day: "2-digit",
@@ -53,14 +60,21 @@
         });
     }
 
-    function escapeHtml(s) {
+    function escapeHtml(s: string) {
         return String(s).replace(/[&<>"']/g, (c) =>
-            ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]),
+            ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c] ?? c),
         );
     }
 
-    function render(lobbies) {
-        countEl.textContent = `${lobbies.length} ${lobbies.length === 1 ? "session" : "sessions"}`;
+    function render(lobbies: any[]) {
+        const count = lobbies.length;
+        if (count === 0) {
+            countEl!.textContent = i18n('sessions_count_zero');
+        } else if (count === 1) {
+            countEl!.textContent = i18n('sessions_count_one');
+        } else {
+            countEl!.textContent = `${count} ${i18n('sessions_count_many')}`;
+        }
 
         lobbies.sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
 
@@ -69,7 +83,7 @@
         currentSnapshot = snapshot;
 
         if (lobbies.length === 0) {
-            listEl.innerHTML = `
+            listEl!.innerHTML = `
                 <div class="session-placeholder">
                     <article class="session-item session-item-skeleton" aria-hidden="true">
                         <div class="session-info">
@@ -87,12 +101,12 @@
                         </div>
                         <div class="skeleton skeleton-btn"></div>
                     </article>
-                    <p class="sessions-empty">No active sessions</p>
+                    <p class="sessions-empty">${escapeHtml(i18n('sessions_no_active'))}</p>
                 </div>`;
             return;
         }
 
-        listEl.innerHTML = lobbies
+        listEl!.innerHTML = lobbies
             .map(
                 (l) => {
                     const playerCount = Number(l.player_count ?? 0);
@@ -104,11 +118,11 @@
                         <h3 class="session-title">${escapeHtml(l.join_code)}</h3>
                         <dl class="session-meta">
                             <div class="session-meta-row">
-                                <dt>Created at:</dt>
+                                <dt>${escapeHtml(i18n('sessions_created_at'))}</dt>
                                 <dd>${escapeHtml(formatDate(l.created_at))}</dd>
                             </div>
                             <div class="session-meta-row">
-                                <dt>Created by:</dt>
+                                <dt>${escapeHtml(i18n('sessions_created_by'))}</dt>
                                 <dd>${escapeHtml(l.creator)}</dd>
                             </div>
                         </dl>
@@ -144,7 +158,7 @@
             render(lobbies);
         } catch (err) {
             if (currentSnapshot === "") {
-                listEl.innerHTML = `<p class="sessions-empty sessions-error">Could not load sessions.</p>`;
+                listEl!.innerHTML = `<p class="sessions-empty sessions-error">${escapeHtml(i18n('sessions_error'))}</p>`;
             }
             console.warn("[sessions] fetch failed:", err);
         } finally {
@@ -152,10 +166,10 @@
         }
     }
 
-    listEl.addEventListener("click", (ev) => {
-        const btn = ev.target.closest(".session-qr-btn");
+    listEl!.addEventListener("click", (ev: Event) => {
+        const btn = (ev.target as HTMLElement).closest(".session-qr-btn") as HTMLButtonElement | null;
         if (!btn || btn.disabled) return;
-        const item = btn.closest(".session-item");
+        const item = btn.closest(".session-item") as HTMLElement | null;
         const code = item && item.dataset.joinCode;
         if (!code) return;
         window.dispatchEvent(
@@ -164,11 +178,16 @@
     });
 
     fetchSessions();
-    let pollTimer = window.setInterval(() => {
+    setInterval(() => {
         if (document.visibilityState === "visible") fetchSessions();
     }, REFRESH_INTERVAL_MS);
     document.addEventListener("visibilitychange", () => {
         if (document.visibilityState === "visible") fetchSessions();
     });
-</script>
 
+    // Re-render on locale change
+    window.addEventListener("hsxr:locale-changed", () => {
+        currentSnapshot = "";
+        fetchSessions();
+    });
+</script>

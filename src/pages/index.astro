@@ -1,15 +1,81 @@
 ---
 import Layout from "../layouts/Layout.astro";
-import SessionsList from "../components/SessionsList.astro";
-import SessionQrOverlay from "../components/SessionQrOverlay.astro";
+import { getLocale, t } from "../i18n";
+
+const locale = getLocale(Astro.cookies, Astro.request.headers.get('Accept-Language'));
 ---
 <Layout>
-    <main class="main-content">
-        <section class="main-card">
-            <h1>HoloSpace-XR Sessions</h1>
-            <SessionsList />
+    <main class="main-content project-page">
+        <section class="main-card project-hero">
+            <h1 data-i18n="hero_title">{t(locale, 'hero_title')}</h1>
+            <p class="project-subtitle" data-i18n="hero_subtitle">{t(locale, 'hero_subtitle')}</p>
+        </section>
+
+        <a href="/contact" class="project-cta">
+            <span class="project-cta-label" data-i18n="cta_label">{t(locale, 'cta_label')}</span>
+            <span class="project-cta-sub" data-i18n="cta_sub">{t(locale, 'cta_sub')}</span>
+        </a>
+
+        <section class="main-card project-section">
+            <h2 data-i18n="about_title">{t(locale, 'about_title')}</h2>
+            <p data-i18n="about_p1">{t(locale, 'about_p1')}</p>
+            <figure class="project-figure">
+                <img src="/skeleton.jpg" alt="HoloSpaceXR spatial audio concept" class="project-image" loading="lazy" />
+                <figcaption data-i18n="about_fig1">{t(locale, 'about_fig1')}</figcaption>
+            </figure>
+            <p data-i18n="about_p2">{t(locale, 'about_p2')}</p>
+        </section>
+
+        <section class="main-card project-section">
+            <h2 data-i18n="tech_title">{t(locale, 'tech_title')}</h2>
+            <p data-i18n="tech_p1">{t(locale, 'tech_p1')}</p>
+            <figure class="project-figure">
+                <img src="/minilab.png" alt="VR-Minilab" class="project-image" loading="lazy" />
+                <figcaption data-i18n="tech_fig1">{t(locale, 'tech_fig1')}</figcaption>
+            </figure>
+        </section>
+
+        <section class="main-card project-section">
+            <h2 data-i18n="objectives_title">{t(locale, 'objectives_title')}</h2>
+            <ul class="project-objectives">
+                <li data-i18n="objective_1">{t(locale, 'objective_1')}</li>
+                <li data-i18n="objective_2">{t(locale, 'objective_2')}</li>
+                <li data-i18n="objective_3">{t(locale, 'objective_3')}</li>
+                <li data-i18n="objective_4">{t(locale, 'objective_4')}</li>
+            </ul>
+        </section>
+
+        <section class="main-card project-section">
+            <h2 data-i18n="innovation_title">{t(locale, 'innovation_title')}</h2>
+            <p data-i18n="innovation_p1">{t(locale, 'innovation_p1')}</p>
+            <figure class="project-figure">
+                <img src="/aura.jpg" alt="HoloSpaceXR avatar concept" class="project-image" loading="lazy" />
+                <figcaption data-i18n="innovation_fig1">{t(locale, 'innovation_fig1')}</figcaption>
+            </figure>
+            <p data-i18n="innovation_p2">{t(locale, 'innovation_p2')}</p>
+            <p data-i18n="innovation_p3">{t(locale, 'innovation_p3')}</p>
+        </section>
+
+        <section class="main-card project-section project-details">
+            <h2 data-i18n="details_title">{t(locale, 'details_title')}</h2>
+            <dl class="project-meta">
+                <div class="project-meta-row">
+                    <dt data-i18n="details_funding_label">{t(locale, 'details_funding_label')}</dt>
+                    <dd data-i18n="details_funding_value">{t(locale, 'details_funding_value')}</dd>
+                </div>
+                <div class="project-meta-row">
+                    <dt data-i18n="details_duration_label">{t(locale, 'details_duration_label')}</dt>
+                    <dd data-i18n="details_duration_value">{t(locale, 'details_duration_value')}</dd>
+                </div>
+                <div class="project-meta-row">
+                    <dt data-i18n="details_team_label">{t(locale, 'details_team_label')}</dt>
+                    <dd data-i18n="details_team_value">{t(locale, 'details_team_value')}</dd>
+                </div>
+                <div class="project-meta-row">
+                    <dt data-i18n="details_cooperation_label">{t(locale, 'details_cooperation_label')}</dt>
+                    <dd><a href="https://newworkdesignlab.org" target="_blank" rel="noopener noreferrer" data-i18n="details_cooperation_value">{t(locale, 'details_cooperation_value')}</a></dd>
+                </div>
+            </dl>
         </section>
     </main>
-    <SessionQrOverlay />
 </Layout>
-

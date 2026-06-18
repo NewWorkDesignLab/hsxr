@@ -1,29 +1,39 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import { getLocale, t } from "../i18n";
+
+const locale = getLocale(Astro.cookies, Astro.request.headers.get('Accept-Language'));
 ---
-<Layout hideHeaderActions={true} hideHomeLink={true}>
+<Layout>
     <main class="contact-main">
         <section class="contact-card">
-            <h1 class="contact-title">Contact</h1>
-            <p class="contact-intro">
-                Thank you for your interest in <strong>HoloSpace XR</strong>!
-                We are currently in a testing phase and welcome any inquiries.
-                Simply fill out the form below and we'll get back to you shortly.
-            </p>
+            <h1 class="contact-title" data-i18n="contact_title">{t(locale, 'contact_title')}</h1>
+            <p class="contact-intro" data-i18n="contact_intro" data-i18n-html set:html={t(locale, 'contact_intro')} />
 
-            <form id="contact-form" class="contact-form" novalidate>
+            <form id="contact-form" class="contact-form" novalidate
+                data-t-consent={t(locale, 'contact_error_consent')}
+                data-t-name={t(locale, 'contact_error_name')}
+                data-t-email={t(locale, 'contact_error_email')}
+                data-t-invalid={t(locale, 'contact_error_invalid')}
+                data-t-generic={t(locale, 'contact_error_generic')}
+                data-t-network={t(locale, 'contact_error_network')}
+                data-t-sending={t(locale, 'contact_sending')}
+                data-t-submit={t(locale, 'contact_submit')}
+                data-t-done={t(locale, 'contact_done_text')}
+                data-t-exists={t(locale, 'contact_done_exists')}
+            >
                 <label class="account-label">
-                    <span>Name *</span>
+                    <span data-i18n="contact_name">{t(locale, 'contact_name')}</span>
                     <input class="account-input" type="text" name="name" required maxlength="200" autocomplete="name" />
                 </label>
 
                 <label class="account-label">
-                    <span>Email *</span>
+                    <span data-i18n="contact_email">{t(locale, 'contact_email')}</span>
                     <input class="account-input" type="email" name="email" required maxlength="320" autocomplete="email" />
                 </label>
 
                 <label class="account-label">
-                    <span>Company</span>
+                    <span data-i18n="contact_company">{t(locale, 'contact_company')}</span>
                     <input class="account-input" type="text" name="company" maxlength="200" autocomplete="organization" />
                 </label>
 
@@ -37,20 +47,19 @@ import Layout from "../layouts/Layout.astro";
                 <label class="contact-consent">
                     <input type="checkbox" name="consent" required />
                     <span>
-                        I consent to my data being stored for the purpose of this inquiry.
-                        See our <a href="/privacy" target="_blank">Privacy Policy</a>.
+                        <span data-i18n="contact_consent">{t(locale, 'contact_consent')}</span> <a href="/privacy" target="_blank" data-i18n="contact_privacy_link">{t(locale, 'contact_privacy_link')}</a>.
                     </span>
                 </label>
 
                 <div class="account-error hidden" id="contact-error"></div>
 
-                <button type="submit" class="account-btn-primary" id="contact-submit">Submit</button>
+                <button type="submit" class="account-btn-primary" id="contact-submit" data-i18n="contact_submit">{t(locale, 'contact_submit')}</button>
             </form>
 
             <div id="contact-done" class="contact-done hidden">
-                <h2 class="contact-done-title">Thank you!</h2>
-                <p class="contact-done-text" id="contact-done-text">You will receive a confirmation email shortly.</p>
-                <button type="button" class="account-btn-link contact-done-back" id="contact-back">← Back to form</button>
+                <h2 class="contact-done-title" data-i18n="contact_done_title">{t(locale, 'contact_done_title')}</h2>
+                <p class="contact-done-text" id="contact-done-text" data-i18n="contact_done_text">{t(locale, 'contact_done_text')}</p>
+                <button type="button" class="account-btn-link contact-done-back" id="contact-back" data-i18n="contact_done_back">{t(locale, 'contact_done_back')}</button>
             </div>
         </section>
     </main>
@@ -64,6 +73,19 @@ import Layout from "../layouts/Layout.astro";
     const doneEl = document.getElementById("contact-done")!;
     const doneText = document.getElementById("contact-done-text")!;
     const backBtn = document.getElementById("contact-back")!;
+
+    const T = {
+        consent: form.dataset.tConsent || "Please accept the privacy policy.",
+        name: form.dataset.tName || "Please enter your name.",
+        email: form.dataset.tEmail || "Please enter your email address.",
+        invalid: form.dataset.tInvalid || "Please enter valid data.",
+        generic: form.dataset.tGeneric || "An error occurred. Please try again later.",
+        network: form.dataset.tNetwork || "Network error. Please try again later.",
+        sending: form.dataset.tSending || "Sending…",
+        submit: form.dataset.tSubmit || "Submit",
+        done: form.dataset.tDone || "You will receive a confirmation email shortly.",
+        exists: form.dataset.tExists || "You are already registered – we'll be in touch!",
+    };
 
     function setError(msg: string) {
         if (msg) {
@@ -89,10 +111,10 @@ import Layout from "../layouts/Layout.astro";
     function disable(busy: boolean) {
         if (busy) {
             submitBtn.disabled = true;
-            submitBtn.textContent = "Sending…";
+            submitBtn.textContent = T.sending;
         } else {
             submitBtn.disabled = false;
-            submitBtn.textContent = "Submit";
+            submitBtn.textContent = T.submit;
         }
     }
 
@@ -107,7 +129,7 @@ import Layout from "../layouts/Layout.astro";
         const fd = new FormData(form);
         const consent = fd.get("consent");
         if (!consent) {
-            setError("Please accept the privacy policy.");
+            setError(T.consent);
             return;
         }
 
@@ -117,11 +139,11 @@ import Layout from "../layouts/Layout.astro";
         const website = (fd.get("website") as string || "").toString();
 
         if (!name) {
-            setError("Please enter your name.");
+            setError(T.name);
             return;
         }
         if (!email) {
-            setError("Please enter your email address.");
+            setError(T.email);
             return;
         }
 
@@ -137,18 +159,18 @@ import Layout from "../layouts/Layout.astro";
             if (res.ok) {
                 const data = await res.json();
                 if (data.status === "already_exists") {
-                    showDone("You are already registered – we'll be in touch!");
+                    showDone(T.exists);
                 } else {
-                    showDone("You will receive a confirmation email shortly.");
+                    showDone(T.done);
                 }
                 form.reset();
             } else if (res.status === 422) {
-                setError("Please enter valid data.");
+                setError(T.invalid);
             } else {
-                setError("An error occurred. Please try again later.");
+                setError(T.generic);
             }
         } catch {
-            setError("Network error. Please try again later.");
+            setError(T.network);
         } finally {
             disable(false);
         }
@@ -159,7 +181,7 @@ import Layout from "../layouts/Layout.astro";
 <style>
     .contact-main {
         width: 100%;
-        max-width: 520px;
+        max-width: 860px;
         margin: 4rem auto 2rem;
         padding: 0 1rem 2rem;
         box-sizing: border-box;

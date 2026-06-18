@@ -1,0 +1,39 @@
+---
+import Layout from "../layouts/Layout.astro";
+import SessionsList from "../components/SessionsList.astro";
+import SessionQrOverlay from "../components/SessionQrOverlay.astro";
+import { createSupabaseServerClient } from "../lib/supabase-server";
+import { getLocale, t } from "../i18n";
+
+const locale = getLocale(Astro.cookies, Astro.request.headers.get('Accept-Language'));
+
+const supabase = createSupabaseServerClient(
+    Astro.cookies,
+    Astro.request.headers.get("Cookie") ?? "",
+);
+const {
+    data: { user },
+} = await supabase.auth.getUser();
+---
+<Layout>
+    {!user ? (
+        <main class="fm-auth-required">
+            <div class="fm-auth-required-card">
+                <div class="account-error" data-i18n="sessions_login_required">
+                    {t(locale, 'sessions_login_required')}
+                </div>
+                <a href="/account?next=/sessions" class="account-btn-link fm-auth-required-link" data-i18n="sessions_go_login">
+                    {t(locale, 'sessions_go_login')}
+                </a>
+            </div>
+        </main>
+    ) : (
+        <main class="main-content">
+            <section class="main-card">
+                <h1 data-i18n="sessions_title">{t(locale, 'sessions_title')}</h1>
+                <SessionsList />
+            </section>
+        </main>
+    )}
+    <SessionQrOverlay />
+</Layout>

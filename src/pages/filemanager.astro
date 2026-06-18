@@ -1,6 +1,10 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { createSupabaseServerClient } from "../lib/supabase-server";
+import { getApiUrl } from "../lib/endpoint-config";
+import { getLocale, t } from "../i18n";
+
+const locale = getLocale(Astro.cookies, Astro.request.headers.get('Accept-Language'));
 
 const supabase = createSupabaseServerClient(
     Astro.cookies,
@@ -9,28 +13,60 @@ const supabase = createSupabaseServerClient(
 const {
     data: { user },
 } = await supabase.auth.getUser();
+
+let userRole: string | null = null;
+if (user) {
+    try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.access_token) {
+            const apiUrl = getApiUrl();
+            const profileRes = await fetch(`${apiUrl}/profiles/me`, {
+                headers: { Authorization: `Bearer ${session.access_token}` },
+            });
+            if (profileRes.ok) {
+                const profile = await profileRes.json();
+                userRole = profile.role ?? null;
+            }
+        }
+    } catch {
+    }
+}
+
+const hasAccess = user && userRole === "team";
 ---
 <Layout>
     {!user ? (
         <main class="fm-auth-required">
             <div class="fm-auth-required-card">
-                <div class="account-error">
-                    You need to be logged in to use the File Manager.
+                <div class="account-error" data-i18n="fm_login_required">
+                    {t(locale, 'fm_login_required')}
                 </div>
-                <a href="/account?next=/filemanager" class="account-btn-link fm-auth-required-link">
-                    ← Go to login
+                <a href="/account?next=/filemanager" class="account-btn-link fm-auth-required-link" data-i18n="fm_go_login">
+                    {t(locale, 'fm_go_login')}
+                </a>
+            </div>
+        </main>
+    ) : !hasAccess ? (
+        <main class="fm-auth-required">
+            <div class="fm-auth-required-card">
+                <div class="account-error" data-i18n="fm_access_denied_text" data-i18n-html>
+                    <strong>{t(locale, 'fm_access_denied_title')}</strong><br/>
+                    {t(locale, 'fm_access_denied_text')}
+                </div>
+                <a href="/account" class="account-btn-link fm-auth-required-link" data-i18n="fm_back_account">
+                    {t(locale, 'fm_back_account')}
                 </a>
             </div>
         </main>
     ) : (
     <main class="fm-root">
         <div id="app-screen" class="fm-app">
-            <h1 class="fm-title">HoloSpace-XR File Manager</h1>
+            <h1 class="fm-title" data-i18n="fm_title">{t(locale, 'fm_title')}</h1>
             <section class="fm-section">
-                <h3 class="fm-section-title">Upload Model</h3>
+                <h3 class="fm-section-title" data-i18n="fm_upload_title">{t(locale, 'fm_upload_title')}</h3>
                 <div class="fm-upload-area" id="drop-zone">
                     <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5" class="fm-upload-icon"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"/></svg>
-                    <p class="fm-upload-hint">GLB<br/><span>Drop file here or click</span></p>
+                    <p class="fm-upload-hint">GLB<br/><span data-i18n="fm_upload_hint">{t(locale, 'fm_upload_hint')}</span></p>
                     <input type="file" id="file-input" accept=".glb" class="fm-file-input" />
                 </div>
                 <div id="upload-status" class="fm-upload-status" style="display:none">
@@ -46,13 +82,13 @@ const {
             </section>
             <section class="fm-section">
                 <div class="fm-list-header">
-                    <h3 class="fm-section-title" style="margin:0">Models on Server</h3>
+                    <h3 class="fm-section-title" style="margin:0" data-i18n="fm_models_title">{t(locale, 'fm_models_title')}</h3>
                     <button id="refresh-btn" class="fm-btn fm-btn-secondary fm-btn-icon" title="Refresh">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
                     </button>
                 </div>
                 <div id="model-list" class="fm-model-list">
-                    <p class="fm-loading">Loading…</p>
+                    <p class="fm-loading" data-i18n="fm_loading">{t(locale, 'fm_loading')}</p>
                 </div>
             </section>
         </div>

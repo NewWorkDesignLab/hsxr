@@ -68,7 +68,6 @@ export async function authorize(
     const { user, session, authHeaders } = await requireSupabaseUser(context.request);
     if (!user) return { response: unauthorized("Not logged in.", authHeaders) };
 
-    // Check role via /profiles/me
     if (session?.access_token) {
         try {
             const apiUrl = getApiUrl();
@@ -90,15 +89,8 @@ export async function authorize(
         return { response: unauthorized("No valid session.", authHeaders) };
     }
 
-    const apiKey = process.env.HSXR_API_KEY ?? import.meta.env.HSXR_API_KEY;
-    if (!apiKey) {
-        return {
-            response: unauthorized("Server is missing HSXR_API_KEY.", authHeaders),
-        };
-    }
-
     return {
-        upstreamHeaders: { "X-API-Key": apiKey },
+        upstreamHeaders: { Authorization: `Bearer ${session.access_token}` },
         authHeaders,
     };
 }

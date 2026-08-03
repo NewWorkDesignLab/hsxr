@@ -15,7 +15,7 @@ const {
     data: { user },
 } = await supabase.auth.getUser();
 ---
-<Layout title={`${t(locale, 'sessions_title')} – HoloSpaceXR`} noindex>
+<Layout title={`${t(locale, 'nav_sessions')} – HoloSpaceXR`} noindex>
     {!user ? (
         <main class="fm-auth-required">
             <div class="fm-auth-required-card">

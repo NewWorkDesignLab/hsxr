@@ -1,4 +1,12 @@
 {
+  "seo_title_default": "HoloSpaceXR – Hybrid Collaboration in Extended Reality",
+  "seo_desc_default": "HoloSpaceXR is a research and validation project by Fachhochschule Dresden redesigning hybrid meetings with Extended Reality (XR): remote participants join as position-accurate avatars with spatial audio.",
+  "seo_title_home": "HoloSpaceXR – Hybrid Meetings in Extended Reality (XR)",
+  "seo_desc_home": "HoloSpaceXR redesigns hybrid meetings with Extended Reality: remote participants appear in the physical room as interactive avatars with realistic spatial audio. An ERDF-funded validation project by Fachhochschule Dresden and the NewWorkDesignLab.",
+  "seo_title_contact": "Contact & Tester Programme – HoloSpaceXR",
+  "seo_desc_contact": "Get in touch with the HoloSpaceXR team. We are in our testing phase and looking for companies and testers for immersive hybrid meetings in XR.",
+  "seo_title_privacy": "Privacy Policy – HoloSpaceXR",
+  "seo_desc_privacy": "How HoloSpaceXR collects, processes and stores personal data in accordance with the GDPR.",
   "hero_title": "HoloSpaceXR Validation Project",
   "hero_subtitle": "Redesigning hybrid collaboration through Extended Reality (XR) technologies",
   "cta_label": "We're looking for testers!",

@@ -8,9 +8,20 @@ import de from "../i18n/de.json";
 interface Props {
     hideHeaderActions?: boolean;
     hideHomeLink?: boolean;
+    title?: string;
+    description?: string;
+    noindex?: boolean;
+    ogImage?: string;
 }
 
-const { hideHeaderActions = false, hideHomeLink = false } = Astro.props;
+const {
+    hideHeaderActions = false,
+    hideHomeLink = false,
+    title,
+    description,
+    noindex = false,
+    ogImage = "/aura.jpg",
+} = Astro.props;
 
 const currentUser = await getOptionalUser(
     Astro.cookies,
@@ -28,6 +39,48 @@ const otherLocale = getOtherLocale(locale);
 const flagSrc = otherLocale === "de" ? "/flag-de.svg" : "/flag-en.svg";
 const flagAlt = otherLocale === "de" ? "Deutsch" : "English";
 const i18nData = JSON.stringify({ en, de });
+
+const siteUrl = Astro.site?.origin ?? "https://holospacexr.com";
+const path = Astro.url.pathname.replace(/\/+$/, "") || "/";
+const canonical = new URL(path, siteUrl).href;
+const isHome = path === "/";
+
+const pageTitle = title ?? t(locale, "seo_title_default");
+const pageDescription = description ?? t(locale, "seo_desc_default");
+const ogImageUrl = new URL(ogImage, siteUrl).href;
+
+const organizationJsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+        {
+            "@type": "Organization",
+            "@id": `${siteUrl}/#organization`,
+            name: "HoloSpaceXR",
+            alternateName: ["HoloSpace XR", "HoloSpaceXR Validation Project"],
+            url: `${siteUrl}/`,
+            logo: new URL("/logos/hsxr_logo.png", siteUrl).href,
+            email: "contact@holospacexr.com",
+            description: t(locale, "seo_desc_default"),
+            parentOrganization: {
+                "@type": "CollegeOrUniversity",
+                name: "Fachhochschule Dresden – Private Fachhochschule gGmbH",
+                url: "https://www.fh-dresden.eu/",
+            },
+            sameAs: [
+                "https://www.fh-dresden.eu/de/forschung/forschungsprojekte/validierungsprojekt-holospacexr/",
+                "https://newworkdesignlab.org",
+            ],
+        },
+        {
+            "@type": "WebSite",
+            "@id": `${siteUrl}/#website`,
+            url: `${siteUrl}/`,
+            name: "HoloSpaceXR",
+            inLanguage: locale,
+            publisher: { "@id": `${siteUrl}/#organization` },
+        },
+    ],
+};
 ---
 
 <html lang={locale}>
@@ -35,22 +88,52 @@ const i18nData = JSON.stringify({ en, de });
         <meta charset="utf-8" />
         <link rel="icon" type="image/png" href="/favicon.png" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>{pageTitle}</title>
+        <meta name="description" content={pageDescription} />
+        <link rel="canonical" href={canonical} />
         <meta
-            name="description"
-            content="HoloSpaceXR – Redesigning hybrid collaboration through XR technologies."
+            name="robots"
+            content={noindex
+                ? "noindex, nofollow"
+                : "index, follow, max-image-preview:large, max-snippet:-1"}
         />
         <meta name="generator" content={Astro.generator} />
+
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="HoloSpaceXR" />
+        <meta property="og:title" content={pageTitle} />
+        <meta property="og:description" content={pageDescription} />
+        <meta property="og:url" content={canonical} />
+        <meta property="og:image" content={ogImageUrl} />
+        <meta property="og:locale" content={locale === "de" ? "de_DE" : "en_US"} />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={pageTitle} />
+        <meta name="twitter:description" content={pageDescription} />
+        <meta name="twitter:image" content={ogImageUrl} />
+
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link
             rel="stylesheet"
             href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap"
         />
-        <script
-            is:inline
-            src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"
-        ></script>
-        <title>HoloSpaceXR</title>
+        {
+            isSessionsPage && (
+                <script
+                    is:inline
+                    src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"
+                />
+            )
+        }
+        {
+            isHome && (
+                <script
+                    type="application/ld+json"
+                    is:inline
+                    set:html={JSON.stringify(organizationJsonLd)}
+                />
+            )
+        }
     </head>
     <body>
         {

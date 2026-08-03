@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /account
+Disallow: /sessions
+Disallow: /filemanager
+Disallow: /api/
+
+Sitemap: https://holospacexr.com/sitemap.xml

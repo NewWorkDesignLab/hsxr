@@ -34,7 +34,7 @@ if (user) {
 
 const hasAccess = user && userRole === "team";
 ---
-<Layout>
+<Layout title={`${t(locale, 'fm_title')} – HoloSpaceXR`} noindex>
     {!user ? (
         <main class="fm-auth-required">
             <div class="fm-auth-required-card">

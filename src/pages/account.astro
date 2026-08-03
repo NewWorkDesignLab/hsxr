@@ -32,7 +32,7 @@ const next = url.searchParams.get("next") ?? "/";
 const initialMode = url.searchParams.get("mode") ?? "";
 const initialMsg = url.searchParams.get("msg") ?? "";
 ---
-<Layout>
+<Layout title={`${t(locale, 'account_title')} – HoloSpaceXR`} noindex>
     <main class="account-main">
 
         {user ? (

@@ -4,7 +4,10 @@ import { getLocale, t } from "../i18n";
 
 const locale = getLocale(Astro.cookies, Astro.request.headers.get('Accept-Language'));
 ---
-<Layout>
+<Layout
+    title={t(locale, 'seo_title_home')}
+    description={t(locale, 'seo_desc_home')}
+>
     <main class="main-content project-page">
         <section class="main-card project-hero">
             <h1 data-i18n="hero_title">{t(locale, 'hero_title')}</h1>

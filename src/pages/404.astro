@@ -1,0 +1,42 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { getLocale, t } from "../i18n";
+
+const locale = getLocale(
+    Astro.cookies,
+    Astro.request.headers.get("Accept-Language"),
+);
+---
+
+<Layout title={t(locale, "seo_title_notfound")} noindex>
+    <main class="fm-auth-required">
+        <div class="fm-auth-required-card">
+            <h1 data-i18n="notfound_title">{t(locale, "notfound_title")}</h1>
+            <p data-i18n="notfound_text">{t(locale, "notfound_text")}</p>
+            <a
+                href="/"
+                class="account-btn-link fm-auth-required-link"
+                data-i18n="notfound_home"
+            >
+                {t(locale, "notfound_home")}
+            </a>
+        </div>
+    </main>
+</Layout>
+
+<style>
+    .fm-auth-required-card h1 {
+        text-align: center;
+        margin-bottom: 0;
+    }
+
+    .fm-auth-required-card p {
+        margin: 0;
+        color: #4b5563;
+    }
+
+    .fm-auth-required-card .account-btn-link {
+        align-self: center;
+        text-align: center;
+    }
+</style>

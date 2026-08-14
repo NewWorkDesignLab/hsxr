@@ -12,70 +12,91 @@ const locale = getLocale(Astro.cookies, Astro.request.headers.get('Accept-Langua
         <article class="privacy-card">
             <h1 class="privacy-title" data-i18n="privacy_title">{t(locale, 'privacy_title')}</h1>
             <p class="privacy-updated" data-i18n="privacy_updated">{t(locale, 'privacy_updated')}</p>
+            <p class="privacy-scope" data-i18n="privacy_scope">{t(locale, 'privacy_scope')}</p>
 
             <section class="privacy-section">
-                <h2 data-i18n="privacy_s1_title">{t(locale, 'privacy_s1_title')}</h2>
-                <p data-i18n="privacy_s1_text" data-i18n-html set:html={t(locale, 'privacy_s1_text')} />
+                <h2 data-i18n="privacy_controller_title">{t(locale, 'privacy_controller_title')}</h2>
+                <p data-i18n="privacy_controller_text">{t(locale, 'privacy_controller_text')}</p>
+                <p data-i18n="privacy_controller_details" data-i18n-html set:html={t(locale, 'privacy_controller_details')} />
+                <p data-i18n="privacy_controller_dpo" data-i18n-html set:html={t(locale, 'privacy_controller_dpo')} />
             </section>
 
             <section class="privacy-section">
-                <h2 data-i18n="privacy_s2_title">{t(locale, 'privacy_s2_title')}</h2>
-                <p data-i18n="privacy_s2_intro">{t(locale, 'privacy_s2_intro')}</p>
-                <ul data-i18n="privacy_s2_list" data-i18n-html set:html={t(locale, 'privacy_s2_list')} />
-                <p data-i18n="privacy_s2_outro">{t(locale, 'privacy_s2_outro')}</p>
+                <h2 data-i18n="privacy_data_title">{t(locale, 'privacy_data_title')}</h2>
+                <ul data-i18n="privacy_data_list" data-i18n-html set:html={t(locale, 'privacy_data_list')} />
             </section>
 
             <section class="privacy-section">
-                <h2 data-i18n="privacy_s3_title">{t(locale, 'privacy_s3_title')}</h2>
-                <p data-i18n="privacy_s3_intro">{t(locale, 'privacy_s3_intro')}</p>
-                <ul data-i18n="privacy_s3_list" data-i18n-html set:html={t(locale, 'privacy_s3_list')} />
-                <p data-i18n="privacy_s3_purpose" data-i18n-html set:html={t(locale, 'privacy_s3_purpose')} />
-                <p data-i18n="privacy_s3_legal" data-i18n-html set:html={t(locale, 'privacy_s3_legal')} />
-                <p data-i18n="privacy_s3_retention" data-i18n-html set:html={t(locale, 'privacy_s3_retention')} />
-                <p data-i18n="privacy_s3_confirm">{t(locale, 'privacy_s3_confirm')}</p>
+                <h2 data-i18n="privacy_purposes_title">{t(locale, 'privacy_purposes_title')}</h2>
+                <ul data-i18n="privacy_purposes_list" data-i18n-html set:html={t(locale, 'privacy_purposes_list')} />
+                <p data-i18n="privacy_purposes_outro">{t(locale, 'privacy_purposes_outro')}</p>
             </section>
 
             <section class="privacy-section">
-                <h2 data-i18n="privacy_s4_title">{t(locale, 'privacy_s4_title')}</h2>
-                <p data-i18n="privacy_s4_text">{t(locale, 'privacy_s4_text')}</p>
-                <p data-i18n="privacy_s4_legal" data-i18n-html set:html={t(locale, 'privacy_s4_legal')} />
+                <h2 data-i18n="privacy_contact_title">{t(locale, 'privacy_contact_title')}</h2>
+                <p data-i18n="privacy_contact_text">{t(locale, 'privacy_contact_text')}</p>
+                <p data-i18n="privacy_contact_withdraw">{t(locale, 'privacy_contact_withdraw')}</p>
             </section>
 
             <section class="privacy-section">
-                <h2 data-i18n="privacy_s5_title">{t(locale, 'privacy_s5_title')}</h2>
-                <p data-i18n="privacy_s5_intro">{t(locale, 'privacy_s5_intro')}</p>
-                <ul data-i18n="privacy_s5_list" data-i18n-html set:html={t(locale, 'privacy_s5_list')} />
-                <p data-i18n="privacy_s5_outro">{t(locale, 'privacy_s5_outro')}</p>
+                <h2 data-i18n="privacy_account_title">{t(locale, 'privacy_account_title')}</h2>
+                <p data-i18n="privacy_account_text">{t(locale, 'privacy_account_text')}</p>
+                <p data-i18n="privacy_account_files">{t(locale, 'privacy_account_files')}</p>
             </section>
 
             <section class="privacy-section">
-                <h2 data-i18n="privacy_s6_title">{t(locale, 'privacy_s6_title')}</h2>
-                <p data-i18n="privacy_s6_intro">{t(locale, 'privacy_s6_intro')}</p>
-                <ul data-i18n="privacy_s6_list" data-i18n-html set:html={t(locale, 'privacy_s6_list')} />
-                <p data-i18n="privacy_s6_contact">{t(locale, 'privacy_s6_contact')}</p>
+                <h2 data-i18n="privacy_cookies_title">{t(locale, 'privacy_cookies_title')}</h2>
+                <p data-i18n="privacy_cookies_intro">{t(locale, 'privacy_cookies_intro')}</p>
+                <p data-i18n="privacy_cookies_only">{t(locale, 'privacy_cookies_only')}</p>
+                <ul data-i18n="privacy_cookies_list" data-i18n-html set:html={t(locale, 'privacy_cookies_list')} />
+            </section>
+
+            <section class="privacy-section">
+                <h2 data-i18n="privacy_processors_title">{t(locale, 'privacy_processors_title')}</h2>
+                <p data-i18n="privacy_processors_intro">{t(locale, 'privacy_processors_intro')}</p>
+                <ul data-i18n="privacy_processors_list" data-i18n-html set:html={t(locale, 'privacy_processors_list')} />
+                <p data-i18n="privacy_processors_astro">{t(locale, 'privacy_processors_astro')}</p>
+            </section>
+
+            <section class="privacy-section">
+                <h2 data-i18n="privacy_retention_title">{t(locale, 'privacy_retention_title')}</h2>
+                <ul data-i18n="privacy_retention_list" data-i18n-html set:html={t(locale, 'privacy_retention_list')} />
+                <p data-i18n="privacy_retention_outro">{t(locale, 'privacy_retention_outro')}</p>
+            </section>
+
+            <section class="privacy-section">
+                <h2 data-i18n="privacy_rights_title">{t(locale, 'privacy_rights_title')}</h2>
+                <p data-i18n="privacy_rights_intro">{t(locale, 'privacy_rights_intro')}</p>
+                <ul data-i18n="privacy_rights_list" data-i18n-html set:html={t(locale, 'privacy_rights_list')} />
+                <p data-i18n="privacy_rights_process">{t(locale, 'privacy_rights_process')}</p>
+                <p data-i18n="privacy_rights_contact">{t(locale, 'privacy_rights_contact')}</p>
                 <p class="privacy-contact-box">
                     📧 <a href="mailto:contact@holospacexr.com">contact@holospacexr.com</a>
                 </p>
-                <p data-i18n="privacy_s6_complaint">{t(locale, 'privacy_s6_complaint')}</p>
+                <p data-i18n="privacy_rights_complaint" data-i18n-html set:html={t(locale, 'privacy_rights_complaint')} />
             </section>
 
             <section class="privacy-section">
-                <h2 data-i18n="privacy_s7_title">{t(locale, 'privacy_s7_title')}</h2>
-                <p data-i18n="privacy_s7_intro">{t(locale, 'privacy_s7_intro')}</p>
+                <h2 data-i18n="privacy_security_title">{t(locale, 'privacy_security_title')}</h2>
+                <p data-i18n="privacy_security_text">{t(locale, 'privacy_security_text')}</p>
+            </section>
+
+            <section class="privacy-section">
+                <h2 data-i18n="privacy_children_title">{t(locale, 'privacy_children_title')}</h2>
+                <p data-i18n="privacy_children_text">{t(locale, 'privacy_children_text')}</p>
+            </section>
+
+            <section class="privacy-section">
+                <h2 data-i18n="privacy_changes_title">{t(locale, 'privacy_changes_title')}</h2>
+                <p data-i18n="privacy_changes_text">{t(locale, 'privacy_changes_text')}</p>
+            </section>
+
+            <section class="privacy-section">
+                <h2 data-i18n="privacy_contactus_title">{t(locale, 'privacy_contactus_title')}</h2>
+                <p data-i18n="privacy_contactus_text">{t(locale, 'privacy_contactus_text')}</p>
                 <p class="privacy-contact-box">
                     📧 <a href="mailto:contact@holospacexr.com">contact@holospacexr.com</a>
                 </p>
-                <p data-i18n="privacy_s7_outro">{t(locale, 'privacy_s7_outro')}</p>
-            </section>
-
-            <section class="privacy-section">
-                <h2 data-i18n="privacy_s8_title">{t(locale, 'privacy_s8_title')}</h2>
-                <p data-i18n="privacy_s8_text">{t(locale, 'privacy_s8_text')}</p>
-            </section>
-
-            <section class="privacy-section">
-                <h2 data-i18n="privacy_s9_title">{t(locale, 'privacy_s9_title')}</h2>
-                <p data-i18n="privacy_s9_text">{t(locale, 'privacy_s9_text')}</p>
             </section>
         </article>
     </main>
@@ -115,9 +136,16 @@ const locale = getLocale(Astro.cookies, Astro.request.headers.get('Accept-Langua
     }
 
     .privacy-updated {
-        margin: 0 0 1.5rem;
+        margin: 0 0 0.75rem;
         color: #6b7280;
         font-size: 0.8rem;
+    }
+
+    .privacy-scope {
+        margin: 0 0 1.5rem;
+        color: #374151;
+        font-size: 0.9rem;
+        line-height: 1.65;
     }
 
     .privacy-section {
@@ -151,7 +179,15 @@ const locale = getLocale(Astro.cookies, Astro.request.headers.get('Accept-Langua
     }
 
     .privacy-section li {
-        margin-bottom: 0.25rem;
+        margin-bottom: 0.4rem;
+    }
+
+    .privacy-section code {
+        font-family: "JetBrains Mono", ui-monospace, monospace;
+        font-size: 0.85em;
+        background: #f3f4f6;
+        border-radius: 4px;
+        padding: 0.1rem 0.3rem;
     }
 
     .privacy-section a {

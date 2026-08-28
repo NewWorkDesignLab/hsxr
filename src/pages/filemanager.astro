@@ -188,19 +188,30 @@ async function downloadModel(name: string, row: HTMLElement): Promise<void> {
     msgEl.className = "fm-upload-msg fm-dl-msg";
     progressEl.style.display = "block";
 
-    const fetchUrl = `/api/filemanager/models-download?name=${encodeURIComponent(name)}`;
-
-    const r = await fetch(fetchUrl);
-    if (r.status === 401) { showAuthError("Your session has expired. Please log in again."); return; }
-    if (!r.ok) {
+    const fail = (text: string): void => {
         fillEl.classList.remove("fm-progress-bar-indeterminate");
         fillEl.style.width = "0%";
         pctEl.textContent = "0%";
-        msgEl.textContent = "Download failed";
+        msgEl.textContent = text;
         msgEl.className = "fm-upload-msg fm-dl-msg fm-upload-msg-error";
         setTimeout(() => hideProgress(progressEl), 4000);
+    };
+
+    let signedUrl: string;
+    try {
+        const signRes = await fetch(`/api/filemanager/models-download-url?name=${encodeURIComponent(name)}`);
+        if (signRes.status === 401) { showAuthError("Your session has expired. Please log in again."); return; }
+        if (!signRes.ok) { fail("Download failed"); return; }
+        const data = (await signRes.json()) as { url?: string };
+        if (!data?.url) { fail("Download failed"); return; }
+        signedUrl = data.url;
+    } catch {
+        fail("Network error");
         return;
     }
+
+    const r = await fetch(signedUrl);
+    if (!r.ok) { fail("Download failed"); return; }
 
     const contentLength = r.headers.get("content-length");
     const total = contentLength ? parseInt(contentLength, 10) : 0;
@@ -272,7 +283,40 @@ function setProgress(pct: number, msg = "", error = false, indeterminate = false
 
 async function uploadFile(file: File): Promise<void> {
     (document.getElementById("upload-filename") as HTMLElement).textContent = file.name;
-    setProgress(0, "Uploading…", false, true);
+    setProgress(0, "Preparing upload…", false, true);
+    const upEl = document.getElementById("upload-status") as HTMLElement;
+
+    let url: string;
+    let method: string;
+    try {
+        const signRes = await fetch("/api/filemanager/models-upload-url", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name: file.name }),
+        });
+        if (signRes.status === 401) {
+            hideProgress(upEl);
+            showAuthError("Your session has expired. Please log in again.");
+            return;
+        }
+        if (!signRes.ok) {
+            setProgress(0, `Error: ${signRes.status} ${signRes.statusText}`, true);
+            setTimeout(() => hideProgress(upEl), 4000);
+            return;
+        }
+        const data = (await signRes.json()) as { url?: string; method?: string };
+        if (!data?.url) {
+            setProgress(0, "Error: no upload URL", true);
+            setTimeout(() => hideProgress(upEl), 4000);
+            return;
+        }
+        url = data.url;
+        method = data.method ?? "PUT";
+    } catch {
+        setProgress(0, "Network error", true);
+        setTimeout(() => hideProgress(upEl), 4000);
+        return;
+    }
 
     return new Promise<void>((resolve) => {
         const xhr = new XMLHttpRequest();
@@ -280,7 +324,8 @@ async function uploadFile(file: File): Promise<void> {
 
         xhr.upload.addEventListener("progress", (e: ProgressEvent) => {
             if (e.lengthComputable) {
-                setProgress(0, `${formatSize(e.loaded)} / ${formatSize(totalBytes)}`, false, true);
+                const pct = Math.round((e.loaded / e.total) * 100);
+                setProgress(pct, `${formatSize(e.loaded)} / ${formatSize(totalBytes)}`);
             }
         });
         xhr.upload.addEventListener("load", () => {
@@ -290,30 +335,22 @@ async function uploadFile(file: File): Promise<void> {
             if (xhr.status === 201 || xhr.status === 200 || xhr.status === 204) {
                 setProgress(100, "✓ Upload successful");
                 loadModels();
-                const upEl = document.getElementById("upload-status") as HTMLElement;
                 setTimeout(() => hideProgress(upEl), 3000);
-            } else if (xhr.status === 401) {
-                const upEl2 = document.getElementById("upload-status") as HTMLElement;
-                hideProgress(upEl2);
-                showAuthError("Your session has expired. Please log in again.");
             } else {
                 setProgress(0, `Error: ${xhr.status} ${xhr.statusText}`, true);
-                const upEl3 = document.getElementById("upload-status") as HTMLElement;
-                setTimeout(() => hideProgress(upEl3), 4000);
+                setTimeout(() => hideProgress(upEl), 4000);
             }
             resolve();
         });
         xhr.addEventListener("error", () => {
             setProgress(0, "Network error", true);
-            const upEl4 = document.getElementById("upload-status") as HTMLElement;
-            setTimeout(() => hideProgress(upEl4), 4000);
+            setTimeout(() => hideProgress(upEl), 4000);
             resolve();
         });
 
-        const fd = new FormData();
-        fd.append("file", file);
-        xhr.open("POST", "/api/filemanager/models-upload");
-        xhr.send(fd);
+        xhr.open(method, url);
+        xhr.setRequestHeader("Content-Type", file.type || "application/octet-stream");
+        xhr.send(file);
     });
 }
 

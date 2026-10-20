@@ -9,5 +9,6 @@ export default defineConfig({
   redirects: {
     '/awards': '/',
     '/awards/UrkundeBestDemoAward_SketchViz.pdf': '/',
+    '/contact': 'https://calendar.app.google/NLNSBPzfVF9NfKk4A',
   },
 });

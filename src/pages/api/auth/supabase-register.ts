@@ -1,5 +1,5 @@
 import type { APIRoute } from 'astro';
-import { createSupabaseServerClientFromRequest } from '../../../lib/supabase-server';
+import { createSupabaseAdminClient, createSupabaseServerClientFromRequest } from '../../../lib/supabase-server';
 import { getOrigin } from '../../../lib/get-origin';
 
 const DISPLAY_NAME_RE = /^[\p{L}\p{N} ._-]+$/u;
@@ -34,6 +34,18 @@ export const POST: APIRoute = async ({ request }) => {
         return jsonError('Display name contains invalid characters.', 400);
     }
 
+    const { data: taken, error: nameError } = await createSupabaseAdminClient()
+        .from('profiles')
+        .select('id')
+        .ilike('display_name', trimmedName.replace(/[\\%_]/g, '\\$&'))
+        .limit(1);
+    if (nameError) {
+        return jsonError('Registration failed. Please try again later.', 500);
+    }
+    if (taken.length > 0) {
+        return jsonError('This display name is already taken.', 409);
+    }
+
     const { data, error } = await supabase.auth.signUp({
         email: body.email,
         password: body.password,
@@ -47,10 +59,14 @@ export const POST: APIRoute = async ({ request }) => {
         let msg = error.message;
         if (/user already registered/i.test(msg)) {
             msg = 'This email is already registered.';
-        } else if (/duplicate key|23505|unique/i.test(msg)) {
+        } else if (/duplicate key|23505|unique|database error saving new user/i.test(msg)) {
             msg = 'This display name is already taken.';
         }
         return jsonError(msg, 400);
+    }
+
+    if (data.user && data.user.identities?.length === 0) {
+        return jsonError('This email is already registered. Please log in or reset your password.', 409);
     }
 
     return new Response(

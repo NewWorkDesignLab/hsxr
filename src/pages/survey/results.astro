@@ -1,0 +1,459 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getLocale, t } from "../../i18n";
+import { getOptionalUser } from "../../lib/auth-helpers";
+import { CHOICES, LIKERT_COUNT, UEQ_COUNT, UEQ_SCALES, range, ueqScore, type ChoiceKey, type SurveyAnswers } from "../../lib/survey";
+import { createSupabaseAdminClient } from "../../lib/supabase-server";
+
+const locale = getLocale(Astro.cookies, Astro.request.headers.get('Accept-Language')); // active UI language
+const user = await getOptionalUser(Astro.cookies, Astro.request.headers.get("Cookie") ?? ""); // logged-in user incl. API role
+const hasAccess = user?.role === "team"; // results are restricted to team accounts
+Astro.response.headers.set("Cache-Control", "no-store");
+
+type Row = SurveyAnswers & { created_at: string };
+let rows: Row[] = []; // ponytail: one select, capped by PostgREST max-rows (default 1000); paginate if responses ever exceed it
+let loadError = false; // true when Supabase could not be queried
+if (hasAccess) {
+    try {
+        const { data, error } = await createSupabaseAdminClient()
+            .from("survey_responses")
+            .select("*")
+            .order("created_at", { ascending: false })
+            .range(0, 4999);
+        if (error) throw error;
+        rows = (data ?? []) as Row[];
+    } catch {
+        loadError = true;
+    }
+}
+
+const n = rows.length; // number of responses
+const nf = new Intl.NumberFormat(locale === "de" ? "de-DE" : "en-US", { maximumFractionDigits: 2, minimumFractionDigits: 2 }); // two-decimal formatter
+const pf = new Intl.NumberFormat(locale === "de" ? "de-DE" : "en-US", { maximumFractionDigits: 0 }); // integer formatter
+const df = new Intl.DateTimeFormat(locale === "de" ? "de-DE" : "en-GB", { dateStyle: "medium", timeStyle: "short", timeZone: "Europe/Berlin" }); // timestamp formatter
+const DIVERGING = ["#c93a3a", "#f08080", "#dddcd8", "#6da7ec", "#1c5cab"]; // validated 5-step red-gray-blue scale
+
+/** Returns the arithmetic mean or 0 for an empty list. */
+function mean(values: number[]): number {
+    return values.length ? values.reduce((a, b) => a + b, 0) / values.length : 0;
+}
+
+/** Counts how often each value 1..size occurs. */
+function countValues(values: number[], size: number): number[] {
+    const counts = Array(size).fill(0);
+    for (const v of values) counts[v - 1]++;
+    return counts;
+}
+
+/** Percentage of the response count, 0 when there are no responses. */
+function pct(count: number): number {
+    return n ? (count / n) * 100 : 0;
+}
+
+/** Bar color for a UEQ mean following the official +-0.8 interpretation bands. */
+function ueqColor(value: number): string {
+    return value > 0.8 ? DIVERGING[4] : value < -0.8 ? DIVERGING[0] : DIVERGING[2];
+}
+
+const ueqItems = range(UEQ_COUNT).map((i) => mean(rows.map((r) => ueqScore(i, r.ueq[i - 1])))); // mean per UEQ item on -3..+3
+const ueqScales = UEQ_SCALES.map((s) => ({ key: s.key, value: mean(s.items.map((i) => ueqItems[i - 1])) })); // mean per UEQ scale
+
+const likert = range(LIKERT_COUNT).map((i) => {
+    const values = rows.map((r) => r.likert[i - 1]);
+    return { i, counts: countValues(values, 5), mean: mean(values) };
+}); // distribution and mean per statement
+
+const npsCounts = countValues(rows.map((r) => r.nps), 10); // answers per recommendation score
+const detractors = npsCounts.slice(0, 6).reduce((a, b) => a + b, 0); // scores 1-6
+const passives = npsCounts[6] + npsCounts[7]; // scores 7-8
+const promoters = npsCounts[8] + npsCounts[9]; // scores 9-10
+const npsScore = n ? Math.round(pct(promoters) - pct(detractors)) : 0; // promoters minus detractors in percent
+const npsMean = mean(rows.map((r) => r.nps)); // mean recommendation score
+
+const choiceSections: { key: ChoiceKey; question: string }[] = [
+    { key: "own_headset", question: "form_own_headset" },
+    { key: "monthly_price", question: "form_monthly_price" },
+    { key: "platform", question: "form_platform" },
+    { key: "workshop_price", question: "form_workshop_price" },
+    { key: "headset_glasses", question: "form_headset_glasses" },
+    { key: "headset_quest", question: "form_headset_quest" },
+]; // single-choice questions shown as bar lists
+const choices = choiceSections.map((c) => ({ ...c, counts: countValues(rows.map((r) => r[c.key]), CHOICES[c.key].count) })); // counts per option
+
+const reasons = rows.filter((r) => r.reason).map((r) => ({ text: r.reason!, at: df.format(new Date(r.created_at)), nps: r.nps })); // free-text answers, newest first
+---
+<Layout title={`${t(locale, 'res_title')} – HoloSpaceXR`} noindex>
+    {!user ? (
+        <main class="fm-auth-required">
+            <div class="fm-auth-required-card">
+                <div class="account-error" data-i18n="res_login_required">{t(locale, 'res_login_required')}</div>
+                <a href="/account?next=/survey/results" class="account-btn-link fm-auth-required-link" data-i18n="res_go_login">{t(locale, 'res_go_login')}</a>
+            </div>
+        </main>
+    ) : !hasAccess ? (
+        <main class="fm-auth-required">
+            <div class="fm-auth-required-card">
+                <div class="account-error">
+                    <strong data-i18n="res_denied_title">{t(locale, 'res_denied_title')}</strong><br/>
+                    <span data-i18n="res_denied_text">{t(locale, 'res_denied_text')}</span>
+                </div>
+                <a href="/account" class="account-btn-link fm-auth-required-link" data-i18n="res_back_account">{t(locale, 'res_back_account')}</a>
+            </div>
+        </main>
+    ) : (
+        <main class="main-content results">
+            <section class="main-card">
+                <h1 data-i18n="res_title">{t(locale, 'res_title')}</h1>
+                <p class="res-count"><strong>{n}</strong> <span data-i18n="res_responses">{t(locale, 'res_responses')}</span></p>
+                {loadError && <div class="account-error" data-i18n="form_error_generic">{t(locale, 'form_error_generic')}</div>}
+                {!loadError && n === 0 && <p class="res-hint" data-i18n="res_empty">{t(locale, 'res_empty')}</p>}
+            </section>
+
+            {n > 0 && (
+                <>
+                    <section class="main-card">
+                        <h2 data-i18n="res_nps_title">{t(locale, 'res_nps_title')}</h2>
+                        <div class="nps-hero">
+                            <span class="nps-score">{npsScore > 0 ? `+${npsScore}` : npsScore}</span>
+                            <span class="res-hint">Ø {nf.format(npsMean)} / 10</span>
+                        </div>
+                        <div class="stack" role="img" aria-label={`${t(locale, 'res_detractors')} ${detractors}, ${t(locale, 'res_passives')} ${passives}, ${t(locale, 'res_promoters')} ${promoters}`}>
+                            {[[detractors, DIVERGING[0], 'res_detractors'], [passives, DIVERGING[2], 'res_passives'], [promoters, DIVERGING[4], 'res_promoters']].map(([c, color, key]) => (
+                                (c as number) > 0 && <span style={`flex:${c};background:${color}`} title={`${t(locale, key as string)}: ${c} (${pf.format(pct(c as number))} %)`}></span>
+                            ))}
+                        </div>
+                        <ul class="legend">
+                            <li><i style={`background:${DIVERGING[0]}`}></i><span data-i18n="res_detractors">{t(locale, 'res_detractors')}</span> {detractors} ({pf.format(pct(detractors))} %)</li>
+                            <li><i style={`background:${DIVERGING[2]}`}></i><span data-i18n="res_passives">{t(locale, 'res_passives')}</span> {passives} ({pf.format(pct(passives))} %)</li>
+                            <li><i style={`background:${DIVERGING[4]}`}></i><span data-i18n="res_promoters">{t(locale, 'res_promoters')}</span> {promoters} ({pf.format(pct(promoters))} %)</li>
+                        </ul>
+                        <p class="res-hint" data-i18n="res_nps_hint">{t(locale, 'res_nps_hint')}</p>
+                    </section>
+
+                    <section class="main-card">
+                        <h2 data-i18n="res_ueq_title">{t(locale, 'res_ueq_title')}</h2>
+                        <p class="res-hint" data-i18n="res_ueq_hint">{t(locale, 'res_ueq_hint')}</p>
+                        <div class="div-chart">
+                            {ueqScales.map(({ key, value }) => (
+                                <div class="div-row" title={`${t(locale, `res_scale_${key}`)}: ${nf.format(value)}`}>
+                                    <span class="div-label" data-i18n={`res_scale_${key}`}>{t(locale, `res_scale_${key}`)}</span>
+                                    <span class="div-track">
+                                        <span class="div-bar" style={`${value >= 0 ? 'left:50%' : `right:50%`};width:${(Math.abs(value) / 3) * 50}%;background:${ueqColor(value)}`}></span>
+                                    </span>
+                                    <span class="div-value">{nf.format(value)}</span>
+                                </div>
+                            ))}
+                        </div>
+                        <details class="res-details">
+                            <summary data-i18n="res_ueq_items">{t(locale, 'res_ueq_items')}</summary>
+                            <div class="div-chart">
+                                {ueqItems.map((value, idx) => (
+                                    <div class="div-row div-row-item" title={nf.format(value)}>
+                                        <span class="div-label">
+                                            <span data-i18n={`form_ueq_${idx + 1}_l`}>{t(locale, `form_ueq_${idx + 1}_l`)}</span> – <span data-i18n={`form_ueq_${idx + 1}_r`}>{t(locale, `form_ueq_${idx + 1}_r`)}</span>
+                                        </span>
+                                        <span class="div-track">
+                                            <span class="div-bar" style={`${value >= 0 ? 'left:50%' : 'right:50%'};width:${(Math.abs(value) / 3) * 50}%;background:${ueqColor(value)}`}></span>
+                                        </span>
+                                        <span class="div-value">{nf.format(value)}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </details>
+                    </section>
+
+                    <section class="main-card">
+                        <h2 data-i18n="res_likert_title">{t(locale, 'res_likert_title')}</h2>
+                        <p class="res-hint" data-i18n="res_likert_hint">{t(locale, 'res_likert_hint')}</p>
+                        <ul class="legend">
+                            {range(5).map((v) => (
+                                <li><i style={`background:${DIVERGING[v - 1]}`}></i>{v} <span data-i18n={`form_likert_scale_${v}`}>{t(locale, `form_likert_scale_${v}`)}</span></li>
+                            ))}
+                        </ul>
+                        {likert.map(({ i, counts, mean: m }) => (
+                            <div class="lk-row">
+                                <span class="lk-text"><span class="lk-num">{i}</span> <span data-i18n={`form_likert_${i}`}>{t(locale, `form_likert_${i}`)}</span></span>
+                                <span class="lk-bar">
+                                    <span class="stack">
+                                        {counts.map((c, v) => c > 0 && <span style={`flex:${c};background:${DIVERGING[v]}`} title={`${v + 1}: ${c} (${pf.format(pct(c))} %)`}></span>)}
+                                    </span>
+                                    <span class="div-value">Ø {nf.format(m)}</span>
+                                </span>
+                            </div>
+                        ))}
+                    </section>
+
+                    <section class="main-card">
+                        <h2 data-i18n="res_choices_title">{t(locale, 'res_choices_title')}</h2>
+                        <div class="choice-grid">
+                            {choices.map(({ key, question, counts }) => (
+                                <div class="choice">
+                                    <h3 data-i18n={question}>{t(locale, question)}</h3>
+                                    {counts.map((c, v) => (
+                                        <div class="bar-row" title={`${c} (${pf.format(pct(c))} %)`}>
+                                            <span class="bar-label" data-i18n={`${CHOICES[key].labels}_${v + 1}`}>{t(locale, `${CHOICES[key].labels}_${v + 1}`)}</span>
+                                            <span class="bar-track"><span class="bar-fill" style={`width:${pct(c)}%`}></span></span>
+                                            <span class="bar-value">{c} · {pf.format(pct(c))} %</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            ))}
+                        </div>
+                    </section>
+
+                    <section class="main-card">
+                        <h2 data-i18n="res_reasons_title">{t(locale, 'res_reasons_title')}</h2>
+                        {reasons.length === 0 ? (
+                            <p class="res-hint" data-i18n="res_reasons_empty">{t(locale, 'res_reasons_empty')}</p>
+                        ) : (
+                            <ul class="reasons">
+                                {reasons.map((r) => (
+                                    <li>
+                                        <p>{r.text}</p>
+                                        <span class="res-hint">{r.at} · NPS {r.nps}</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </section>
+                </>
+            )}
+        </main>
+    )}
+</Layout>
+
+<style>
+    .results .main-card + .main-card {
+        margin-top: 1.5rem;
+    }
+
+    .results h2 {
+        font-size: 1.15rem;
+        font-weight: 600;
+        color: #111827;
+        margin: 0 0 0.5rem;
+    }
+
+    .results h3 {
+        font-size: 0.88rem;
+        font-weight: 600;
+        color: #111827;
+        line-height: 1.45;
+        margin: 0 0 0.5rem;
+    }
+
+    .res-count {
+        margin: 0 0 0.5rem;
+        color: #374151;
+    }
+
+    .res-hint {
+        color: #6b7280;
+        font-size: 0.8rem;
+        line-height: 1.5;
+        margin: 0.25rem 0 0.75rem;
+    }
+
+    .nps-hero {
+        display: flex;
+        align-items: baseline;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .nps-score {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #111827;
+        font-variant-numeric: tabular-nums;
+    }
+
+    .stack {
+        display: flex;
+        gap: 2px;
+        height: 14px;
+        width: 100%;
+        min-width: 0;
+    }
+
+    .stack > span {
+        min-width: 3px;
+    }
+
+    .stack > span:first-child {
+        border-radius: 4px 0 0 4px;
+    }
+
+    .stack > span:last-child {
+        border-radius: 0 4px 4px 0;
+    }
+
+    .stack > span:only-child {
+        border-radius: 4px;
+    }
+
+    .legend {
+        list-style: none;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem 1.1rem;
+        padding: 0;
+        margin: 0.6rem 0 0.25rem;
+        font-size: 0.8rem;
+        color: #374151;
+    }
+
+    .legend li {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+    }
+
+    .legend i {
+        width: 10px;
+        height: 10px;
+        border-radius: 2px;
+        display: inline-block;
+    }
+
+    .div-chart {
+        display: grid;
+        gap: 0.4rem;
+    }
+
+    .div-row {
+        display: grid;
+        grid-template-columns: minmax(120px, 34%) 1fr 3.5rem;
+        align-items: center;
+        gap: 0.75rem;
+        font-size: 0.88rem;
+        color: #111827;
+    }
+
+    .div-row-item {
+        font-size: 0.8rem;
+    }
+
+    .div-track {
+        position: relative;
+        height: 14px;
+        background: linear-gradient(#9ca3af, #9ca3af) center / 1px 100% no-repeat;
+    }
+
+    .div-bar {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        border-radius: 4px;
+        min-width: 2px;
+    }
+
+    .div-value,
+    .bar-value {
+        font-size: 0.8rem;
+        color: #374151;
+        text-align: right;
+        font-variant-numeric: tabular-nums;
+        white-space: nowrap;
+    }
+
+    .res-details {
+        margin-top: 1rem;
+    }
+
+    .res-details summary {
+        cursor: pointer;
+        color: #4a90d9;
+        font-size: 0.85rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .lk-row {
+        display: grid;
+        grid-template-columns: 1fr minmax(180px, 40%);
+        gap: 1rem;
+        align-items: center;
+        padding: 0.45rem 0;
+        border-top: 1px solid #f3f4f6;
+        font-size: 0.85rem;
+        color: #111827;
+        line-height: 1.45;
+    }
+
+    .lk-num {
+        color: #9ca3af;
+        margin-right: 0.25rem;
+    }
+
+    .lk-bar {
+        display: grid;
+        grid-template-columns: 1fr 3.5rem;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .choice-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem 2rem;
+    }
+
+    .bar-row {
+        display: grid;
+        grid-template-columns: 9rem 1fr 5.5rem;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.8rem;
+        color: #374151;
+        padding: 0.15rem 0;
+    }
+
+    .bar-track {
+        height: 12px;
+    }
+
+    .bar-fill {
+        display: block;
+        height: 100%;
+        background: #1c5cab;
+        border-radius: 0 4px 4px 0;
+        min-width: 1px;
+    }
+
+    .reasons {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .reasons li {
+        padding: 0.6rem 0;
+        border-top: 1px solid #f3f4f6;
+    }
+
+    .reasons p {
+        margin: 0;
+        color: #111827;
+        line-height: 1.6;
+        white-space: pre-wrap;
+    }
+
+    @media (max-width: 640px) {
+        .div-row {
+            grid-template-columns: 1fr 3rem;
+        }
+
+        .div-label {
+            grid-column: 1 / -1;
+        }
+
+        .lk-row {
+            grid-template-columns: 1fr;
+            gap: 0.35rem;
+        }
+
+        .bar-row {
+            grid-template-columns: 7rem 1fr 5rem;
+        }
+    }
+</style>

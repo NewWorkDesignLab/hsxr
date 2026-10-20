@@ -1,0 +1,458 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { getLocale, t } from "../i18n";
+import { CHOICES, LIKERT_GROUPS, NPS_MAX, UEQ_COUNT, range, REASON_MAX, type ChoiceKey } from "../lib/survey";
+import { issueFormToken } from "../lib/survey-server";
+
+const locale = getLocale(Astro.cookies, Astro.request.headers.get('Accept-Language')); // active UI language
+const token = issueFormToken(); // signed single-use token, also starts the fill timer
+Astro.response.headers.set("Cache-Control", "no-store");
+
+const choiceBlocks: { key: ChoiceKey; question: string }[] = [
+    { key: "own_headset", question: "form_own_headset" },
+    { key: "monthly_price", question: "form_monthly_price" },
+    { key: "platform", question: "form_platform" },
+    { key: "workshop_price", question: "form_workshop_price" },
+]; // questions 28-31
+const headsets: { key: ChoiceKey; img: string; label: string; letter: string }[] = [
+    { key: "headset_glasses", img: "/headset-glasses.png", label: "form_headset_glasses", letter: "a)" },
+    { key: "headset_quest", img: "/headset-quest.png", label: "form_headset_quest", letter: "b)" },
+]; // question 32 headset variants
+---
+<Layout title={`${t(locale, 'form_title')} – HoloSpaceXR`} noindex>
+    <main class="main-content survey">
+        <section class="main-card">
+            <h1 data-i18n="form_title">{t(locale, 'form_title')}</h1>
+            <p class="survey-text" data-i18n="form_intro">{t(locale, 'form_intro')}</p>
+            <p class="survey-note" data-i18n="form_privacy_note" data-i18n-html set:html={t(locale, 'form_privacy_note')} />
+        </section>
+
+        <form id="survey-form" class="survey-form">
+            <input type="hidden" name="token" value={token} />
+            <div class="survey-hp" aria-hidden="true">
+                <label>Website <input type="text" name="website" tabindex="-1" autocomplete="off" /></label>
+            </div>
+
+            <section class="main-card">
+                <h2 data-i18n="form_ueq_title">{t(locale, 'form_ueq_title')}</h2>
+                <p class="survey-text" data-i18n="form_ueq_intro">{t(locale, 'form_ueq_intro')}</p>
+                <div class="ueq">
+                    <div class="ueq-row ueq-head" aria-hidden="true">
+                        <span></span>
+                        <span class="ueq-dots">{range(7).map((v) => <span>{v}</span>)}</span>
+                        <span></span>
+                    </div>
+                    {range(UEQ_COUNT).map((i) => (
+                        <div class="ueq-row" role="radiogroup" aria-labelledby={`ueq${i}l ueq${i}r`}>
+                            <span class="ueq-l" id={`ueq${i}l`} data-i18n={`form_ueq_${i}_l`}>{t(locale, `form_ueq_${i}_l`)}</span>
+                            <span class="ueq-dots">
+                                {range(7).map((v) => (
+                                    <label class="dot">
+                                        <input type="radio" name={`ueq${i}`} value={v} required aria-label={String(v)} />
+                                    </label>
+                                ))}
+                            </span>
+                            <span class="ueq-r" id={`ueq${i}r`} data-i18n={`form_ueq_${i}_r`}>{t(locale, `form_ueq_${i}_r`)}</span>
+                        </div>
+                    ))}
+                </div>
+            </section>
+
+            <section class="main-card">
+                <h2 data-i18n="form_likert_title">{t(locale, 'form_likert_title')}</h2>
+                <p class="survey-text" data-i18n="form_likert_intro">{t(locale, 'form_likert_intro')}</p>
+                <ol class="likert-legend">
+                    {range(5).map((v) => <li><b>{v}</b> <span data-i18n={`form_likert_scale_${v}`}>{t(locale, `form_likert_scale_${v}`)}</span></li>)}
+                </ol>
+                {LIKERT_GROUPS.map((group) => (
+                    <div class="likert-group">
+                        {group.map((i) => (
+                            <div class="likert-row" role="radiogroup" aria-labelledby={`l${i}t`}>
+                                <span class="likert-num">{i}</span>
+                                <span class="likert-text" id={`l${i}t`} data-i18n={`form_likert_${i}`}>{t(locale, `form_likert_${i}`)}</span>
+                                <span class="likert-dots">
+                                    {range(5).map((v) => (
+                                        <label class="dot dot-num">
+                                            <input type="radio" name={`l${i}`} value={v} required aria-label={String(v)} />
+                                            <span aria-hidden="true">{v}</span>
+                                        </label>
+                                    ))}
+                                </span>
+                            </div>
+                        ))}
+                    </div>
+                ))}
+            </section>
+
+            <section class="main-card survey-more">
+                <h2 data-i18n="form_more_title">{t(locale, 'form_more_title')}</h2>
+
+                <fieldset class="q">
+                    <legend data-i18n="form_nps">{t(locale, 'form_nps')}</legend>
+                    <div class="nps">
+                        {range(NPS_MAX).map((v) => (
+                            <label class="dot dot-num">
+                                <input type="radio" name="nps" value={v} required aria-label={String(v)} />
+                                <span aria-hidden="true">{v}</span>
+                            </label>
+                        ))}
+                    </div>
+                </fieldset>
+
+                <label class="q account-label">
+                    <span class="q-title" data-i18n="form_reason">{t(locale, 'form_reason')}</span>
+                    <textarea class="account-input survey-textarea" name="reason" rows="3" maxlength={REASON_MAX}></textarea>
+                    <span class="survey-note" data-i18n="form_reason_hint">{t(locale, 'form_reason_hint')}</span>
+                </label>
+
+                <div class="q-grid">
+                    {choiceBlocks.map(({ key, question }) => (
+                        <fieldset class="q">
+                            <legend data-i18n={question}>{t(locale, question)}</legend>
+                            {range(CHOICES[key].count).map((v) => (
+                                <label class="opt">
+                                    <input type="radio" name={key} value={v} required />
+                                    <span data-i18n={`${CHOICES[key].labels}_${v}`}>{t(locale, `${CHOICES[key].labels}_${v}`)}</span>
+                                </label>
+                            ))}
+                        </fieldset>
+                    ))}
+                </div>
+
+                <div class="q">
+                    <p class="q-title" data-i18n="form_headset">{t(locale, 'form_headset')}</p>
+                    <div class="q-grid">
+                        {headsets.map(({ key, img, label, letter }) => (
+                            <fieldset class="q headset">
+                                <legend>
+                                    {letter} <span data-i18n={label}>{t(locale, label)}</span>
+                                </legend>
+                                <img src={img} alt="" class="headset-img" loading="lazy" />
+                                {range(CHOICES[key].count).map((v) => (
+                                    <label class="opt">
+                                        <input type="radio" name={key} value={v} required />
+                                        <span data-i18n={`form_yesno_${v}`}>{t(locale, `form_yesno_${v}`)}</span>
+                                    </label>
+                                ))}
+                            </fieldset>
+                        ))}
+                    </div>
+                </div>
+
+                <div class="account-error hidden" id="survey-error" role="alert"></div>
+                <button type="submit" class="account-btn-primary survey-submit" id="survey-submit" data-i18n="form_submit">{t(locale, 'form_submit')}</button>
+            </section>
+        </form>
+
+        <section id="survey-done" class="main-card survey-done hidden" tabindex="-1">
+            <h2 data-i18n="form_done_title">{t(locale, 'form_done_title')}</h2>
+            <p class="survey-text" data-i18n="form_done_text">{t(locale, 'form_done_text')}</p>
+        </section>
+    </main>
+</Layout>
+
+<script>
+const form = document.getElementById("survey-form") as HTMLFormElement; // survey form element
+const errorEl = document.getElementById("survey-error")!; // inline error box
+const submitBtn = document.getElementById("survey-submit") as HTMLButtonElement; // submit button
+const doneEl = document.getElementById("survey-done")!; // thank-you card shown after success
+
+/** Looks up a translation for the currently active locale. */
+function tr(key: string): string {
+    const w = window as unknown as { __i18n: Record<string, Record<string, string>>; __locale: string };
+    return w.__i18n?.[w.__locale]?.[key] ?? key;
+}
+
+/** Shows or clears the error message below the form. */
+function setError(key: string | null) {
+    errorEl.textContent = key ? tr(key) : "";
+    errorEl.classList.toggle("hidden", !key);
+}
+
+form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    setError(null);
+    submitBtn.disabled = true;
+    submitBtn.textContent = tr("form_sending");
+    try {
+        const res = await fetch("/api/survey", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(Object.fromEntries(new FormData(form))),
+        });
+        const data = await res.json().catch(() => ({}));
+        if (res.ok) {
+            form.remove();
+            doneEl.classList.remove("hidden");
+            doneEl.focus();
+            window.scrollTo({ top: 0 });
+            return;
+        }
+        if (data.token) (form.elements.namedItem("token") as HTMLInputElement).value = data.token;
+        const known: Record<string, string> = { expired: "form_error_expired", rate: "form_error_rate", invalid: "form_error_invalid" };
+        setError(known[data.error] ?? "form_error_generic");
+    } catch {
+        setError("form_error_network");
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = tr("form_submit");
+    }
+});
+</script>
+
+<style>
+    .survey .main-card + .main-card,
+    .survey-form .main-card {
+        margin-top: 1.5rem;
+    }
+
+    .survey h2 {
+        font-size: 1.15rem;
+        font-weight: 600;
+        color: #111827;
+        margin: 0 0 0.75rem;
+    }
+
+    .survey-text {
+        color: #374151;
+        line-height: 1.7;
+        margin: 0 0 0.75rem;
+    }
+
+    .survey-note {
+        color: #6b7280;
+        font-size: 0.82rem;
+        line-height: 1.5;
+        margin: 0;
+        font-weight: 400;
+    }
+
+    .survey-note :global(a) {
+        color: #4a90d9;
+    }
+
+    .survey-hp {
+        position: absolute;
+        left: -5000px;
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+    }
+
+    .dot {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 32px;
+        min-height: 32px;
+        cursor: pointer;
+    }
+
+    .dot input {
+        width: 18px;
+        height: 18px;
+        margin: 0;
+        accent-color: #4a90d9;
+        cursor: pointer;
+    }
+
+    .dot-num {
+        flex-direction: column;
+        gap: 0.15rem;
+        font-size: 0.72rem;
+        color: #6b7280;
+    }
+
+    .ueq-row {
+        display: grid;
+        grid-template-columns: 1fr auto 1fr;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.2rem 0.5rem;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        color: #111827;
+    }
+
+    .ueq-row:nth-child(even) {
+        background: #f3f4f6;
+    }
+
+    .ueq-head {
+        font-size: 0.72rem;
+        color: #9ca3af;
+        background: none !important;
+    }
+
+    .ueq-head .ueq-dots span {
+        min-width: 32px;
+        text-align: center;
+    }
+
+    .ueq-l {
+        text-align: right;
+    }
+
+    .ueq-dots,
+    .likert-dots,
+    .nps {
+        display: flex;
+        flex-wrap: nowrap;
+    }
+
+    .likert-legend {
+        list-style: none;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.25rem 1rem;
+        padding: 0;
+        margin: 0 0 1rem;
+        font-size: 0.8rem;
+        color: #4b5563;
+    }
+
+    .likert-group + .likert-group {
+        border-top: 1px solid #d1d5db;
+        margin-top: 0.5rem;
+        padding-top: 0.5rem;
+    }
+
+    .likert-row {
+        display: grid;
+        grid-template-columns: 1.5rem 1fr auto;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.35rem 0.5rem;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        color: #111827;
+        line-height: 1.45;
+    }
+
+    .likert-row:nth-child(odd) {
+        background: #f3f4f6;
+    }
+
+    .likert-num {
+        color: #9ca3af;
+        font-size: 0.8rem;
+    }
+
+    .q {
+        border: none;
+        padding: 0;
+        margin: 0 0 1.5rem;
+        min-width: 0;
+    }
+
+    .q legend,
+    .q-title {
+        font-size: 0.92rem;
+        font-weight: 600;
+        color: #111827;
+        line-height: 1.5;
+        padding: 0;
+        margin: 0 0 0.5rem;
+    }
+
+    .survey-textarea {
+        height: auto;
+        resize: vertical;
+        font-weight: 400;
+    }
+
+    .q-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 0 2rem;
+    }
+
+    .opt {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.3rem 0;
+        font-size: 0.9rem;
+        color: #374151;
+        cursor: pointer;
+    }
+
+    .opt input {
+        width: 18px;
+        height: 18px;
+        margin: 0;
+        accent-color: #4a90d9;
+    }
+
+    .headset-img {
+        display: block;
+        width: auto;
+        max-width: 100%;
+        height: 110px;
+        object-fit: contain;
+        margin: 0 0 0.5rem;
+    }
+
+    .survey-submit {
+        width: 100%;
+        margin-top: 0.5rem;
+    }
+
+    #survey-error {
+        margin-bottom: 0.5rem;
+    }
+
+    .survey-done {
+        text-align: center;
+        outline: none;
+    }
+
+    @media (max-width: 640px) {
+        .main-card {
+            padding: 1.25rem 0.75rem;
+        }
+
+        .ueq-row {
+            grid-template-columns: 1fr 1fr;
+            row-gap: 0.1rem;
+        }
+
+        .ueq-l {
+            text-align: left;
+            grid-row: 1;
+        }
+
+        .ueq-r {
+            text-align: right;
+            grid-row: 1;
+            grid-column: 2;
+        }
+
+        .ueq-dots {
+            grid-column: 1 / -1;
+            justify-content: space-between;
+        }
+
+        .ueq-head {
+            display: none;
+        }
+
+        .likert-row {
+            grid-template-columns: 1.25rem 1fr;
+        }
+
+        .likert-dots {
+            grid-column: 1 / -1;
+            justify-content: space-around;
+        }
+
+        .nps {
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+
+        .nps .dot {
+            min-width: 18%;
+        }
+    }
+</style>

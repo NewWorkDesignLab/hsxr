@@ -412,25 +412,6 @@ const organizationJsonLd = {
                             el.setAttribute("aria-label", dict[key]);
                         }
                     });
-                // Update form data-t-* attributes for contact form
-                var form = document.getElementById("contact-form");
-                if (form) {
-                    var map = {
-                        tConsent: "contact_error_consent",
-                        tName: "contact_error_name",
-                        tEmail: "contact_error_email",
-                        tInvalid: "contact_error_invalid",
-                        tGeneric: "contact_error_generic",
-                        tNetwork: "contact_error_network",
-                        tSending: "contact_sending",
-                        tSubmit: "contact_submit",
-                        tDone: "contact_done_text",
-                        tExists: "contact_done_exists",
-                    };
-                    for (var k in map) {
-                        if (dict[map[k]]) form.dataset[k] = dict[map[k]];
-                    }
-                }
                 document.documentElement.setAttribute("lang", lang);
                 window.__locale = lang;
             }

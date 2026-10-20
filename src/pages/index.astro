@@ -14,7 +14,7 @@ const locale = getLocale(Astro.cookies, Astro.request.headers.get('Accept-Langua
             <p class="project-subtitle" data-i18n="hero_subtitle">{t(locale, 'hero_subtitle')}</p>
         </section>
 
-        <a href="/contact" class="project-cta">
+        <a href="https://calendar.app.google/NLNSBPzfVF9NfKk4A" class="project-cta" target="_blank" rel="noopener noreferrer">
             <span class="project-cta-label" data-i18n="cta_label">{t(locale, 'cta_label')}</span>
             <span class="project-cta-sub" data-i18n="cta_sub">{t(locale, 'cta_sub')}</span>
         </a>
@@ -23,7 +23,7 @@ const locale = getLocale(Astro.cookies, Astro.request.headers.get('Accept-Langua
             <h2 data-i18n="about_title">{t(locale, 'about_title')}</h2>
             <p data-i18n="about_p1">{t(locale, 'about_p1')}</p>
             <figure class="project-figure">
-                <img src="/skeleton.jpg" alt="HoloSpaceXR spatial audio concept" class="project-image" loading="lazy" />
+                <img src="/audio.jpg" alt="Two avatars in a meeting room with spatial audio cues showing direction and distance" class="project-image" loading="lazy" width="1535" height="1024" />
                 <figcaption data-i18n="about_fig1">{t(locale, 'about_fig1')}</figcaption>
             </figure>
             <p data-i18n="about_p2">{t(locale, 'about_p2')}</p>

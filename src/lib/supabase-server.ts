@@ -1,4 +1,5 @@
 import { createServerClient, parseCookieHeader, serializeCookieHeader } from '@supabase/ssr';
+import { createClient } from '@supabase/supabase-js';
 import type { AstroCookies } from 'astro';
 
 function parseCookies(cookieHeader: string) {
@@ -54,5 +55,19 @@ export function createSupabaseServerClientFromRequest(
                     );
                 }),
         },
+    });
+}
+
+/** Returns the server-only service role key or throws when it is missing. */
+export function serviceKey(): string {
+    const key = import.meta.env.SUPABASE_SERVICE_ROLE_KEY as string | undefined;
+    if (!key) throw new Error('SUPABASE_SERVICE_ROLE_KEY missing.');
+    return key;
+}
+
+/** Creates a Supabase client with service role rights; never expose it to the browser. */
+export function createSupabaseAdminClient() {
+    return createClient(getEnv().url, serviceKey(), {
+        auth: { persistSession: false, autoRefreshToken: false },
     });
 }

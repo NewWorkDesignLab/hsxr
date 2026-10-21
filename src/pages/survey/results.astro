@@ -138,7 +138,7 @@ const reasons = rows.filter((r) => r.reason).map((r) => ({ text: r.reason!, at: 
                                 <div class="div-row" title={`${t(locale, `res_scale_${key}`)}: ${nf.format(value)}`}>
                                     <span class="div-label" data-i18n={`res_scale_${key}`}>{t(locale, `res_scale_${key}`)}</span>
                                     <span class="div-track">
-                                        <span class="div-bar" style={`${value >= 0 ? 'left:50%' : `right:50%`};width:${(Math.abs(value) / 3) * 50}%;background:${ueqColor(value)}`}></span>
+                                        <span class:list={["div-bar", { neg: value < 0 }]} style={`${value >= 0 ? 'left:50%' : `right:50%`};width:${(Math.abs(value) / 3) * 50}%;background:${ueqColor(value)}`}></span>
                                     </span>
                                     <span class="div-value">{nf.format(value)}</span>
                                 </div>
@@ -153,7 +153,7 @@ const reasons = rows.filter((r) => r.reason).map((r) => ({ text: r.reason!, at: 
                                             <span data-i18n={`form_ueq_${idx + 1}_l`}>{t(locale, `form_ueq_${idx + 1}_l`)}</span> – <span data-i18n={`form_ueq_${idx + 1}_r`}>{t(locale, `form_ueq_${idx + 1}_r`)}</span>
                                         </span>
                                         <span class="div-track">
-                                            <span class="div-bar" style={`${value >= 0 ? 'left:50%' : 'right:50%'};width:${(Math.abs(value) / 3) * 50}%;background:${ueqColor(value)}`}></span>
+                                            <span class:list={["div-bar", { neg: value < 0 }]} style={`${value >= 0 ? 'left:50%' : 'right:50%'};width:${(Math.abs(value) / 3) * 50}%;background:${ueqColor(value)}`}></span>
                                         </span>
                                         <span class="div-value">{nf.format(value)}</span>
                                     </div>
@@ -344,8 +344,12 @@ const reasons = rows.filter((r) => r.reason).map((r) => ({ text: r.reason!, at: 
         position: absolute;
         top: 0;
         bottom: 0;
-        border-radius: 4px;
+        border-radius: 0 4px 4px 0; /* square end sits on the zero axis */
         min-width: 2px;
+    }
+
+    .div-bar.neg {
+        border-radius: 4px 0 0 4px;
     }
 
     .div-value,

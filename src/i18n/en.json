@@ -17,7 +17,7 @@
   "tech_p1": "The NewWorkDesignLab previously demonstrated in the preliminary project \"VR-Minilab\" how real spaces and virtual avatars can be synchronized and displayed together. Building on these findings, the HoloSpaceXR project plans to further develop proprietary applications for VR headsets and multi-user solutions, ultimately creating a validated prototype.",
   "tech_fig1": "Preliminary project \"VR-Minilab\": a physical room (left) overlaid with a geometrically identical virtual representation (view through VR headset).",
   "objectives_title": "Validation Objectives",
-  "objective_1": "Market validation through corporate studies (target NPS score: 7–10)",
+  "objective_1": "Market validation through corporate studies",
   "objective_2": "Technical validation of the HoloSpaceXR prototypes",
   "objective_3": "Development and evaluation of a business model, including financial planning",
   "objective_4": "Assessment of the technological maturity level",
